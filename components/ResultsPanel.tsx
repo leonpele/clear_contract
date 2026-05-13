@@ -1,5 +1,7 @@
 'use client';
 
+const FEEDBACK_FORM_URL = 'https://tally.so/r/zx2kR0';
+
 interface AnalysisResult {
   summary: string;
   risky_clauses: Array<{ quote: string; explanation: string }>;
@@ -95,6 +97,21 @@ export default function ResultsPanel({ results }: ResultsPanelProps) {
           </div>
         </div>
       )}
+
+      <div className="pt-2 border-t border-gray-200">
+        <p className="text-sm text-gray-600 mb-3">
+          How was your experience? We read every response.
+        </p>
+        <a
+          href={FEEDBACK_FORM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-gray-300 text-gray-800 font-medium text-sm hover:border-risk-red hover:text-risk-red hover:bg-red-50 transition"
+        >
+          <span aria-hidden>💬</span>
+          Give us your feedback
+        </a>
+      </div>
     </div>
   );
 }
