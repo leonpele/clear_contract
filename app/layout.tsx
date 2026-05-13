@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ContractClear",
   description: "AI-powered contract analyzer — understand any contract in 30 seconds",
+  icons: {
+    icon: [{ url: "/graphql-16-svgrepo-com.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({
