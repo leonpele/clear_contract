@@ -67,9 +67,12 @@ export default function Home() {
               <li>✓ PDF & text support</li>
               <li>✓ No commitment</li>
             </ul>
-            <button className="w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700">
+            <Link
+              href="/analyze"
+              className="block w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 text-center"
+            >
               Choose Plan
-            </button>
+            </Link>
           </div>
 
           {/* Subscription Plan */}
@@ -83,9 +86,12 @@ export default function Home() {
               <li>✓ PDF & text support</li>
               <li>✓ Cancel anytime</li>
             </ul>
-            <button className="w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700">
+            <Link
+              href="/analyze"
+              className="block w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 text-center"
+            >
               Subscribe Now
-            </button>
+            </Link>
           </div>
         </div>
       </section>
