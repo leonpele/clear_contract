@@ -103,10 +103,18 @@ export async function POST(request: NextRequest) {
     console.error('Error in /api/stripe/checkout:', error);
 
     if (error instanceof Stripe.errors.StripeError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
+      let message = error.message;
+      const isMissingPrice =
+        error.code === 'resource_missing' ||
+        /no such price/i.test(message);
+
+      if (isMissingPrice) {
+        message += `
+
+Likely cause: your secret key and this Price ID are not in the same Stripe mode. If STRIPE_SECRET_KEY starts with sk_test_, create/copy the price in Test mode (toggle in the Stripe Dashboard). If it starts with sk_live_, use a price created in Live mode.`;
+      }
+
+      return NextResponse.json({ error: message }, { status: 400 });
     }
 
     return NextResponse.json(
