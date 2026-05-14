@@ -68,7 +68,7 @@ export default function Home() {
               <li>✓ No commitment</li>
             </ul>
             <Link
-              href="/analyze"
+              href="/checkout?plan=one-time"
               className="block w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 text-center"
             >
               Choose Plan
@@ -87,7 +87,7 @@ export default function Home() {
               <li>✓ Cancel anytime</li>
             </ul>
             <Link
-              href="/analyze"
+              href="/checkout?plan=subscription"
               className="block w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 text-center"
             >
               Subscribe Now

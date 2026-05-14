@@ -1,18 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import {
+  STRIPE_FALLBACK_PRICE_ONETIME,
+  STRIPE_FALLBACK_PRICE_SUBSCRIPTION,
+} from '@/lib/stripePriceIds';
 
 type PlanType = 'one-time' | 'subscription';
 
-function resolvePriceId(planType: PlanType): string | null {
-  const oneTime =
-    process.env.STRIPE_PRICE_ONETIME ||
-    process.env.NEXT_PUBLIC_STRIPE_PRICE_ONETIME;
-  const subscription =
-    process.env.STRIPE_PRICE_SUBSCRIPTION ||
-    process.env.NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION;
+function pickPriceId(raw: string | undefined, fallback: string): string | null {
+  const fromEnv = raw?.trim();
+  if (fromEnv?.startsWith('price_')) return fromEnv;
+  const fb = fallback?.trim();
+  if (fb?.startsWith('price_')) return fb;
+  return null;
+}
 
-  const id = planType === 'subscription' ? subscription : oneTime;
-  return id?.trim() || null;
+function resolvePriceId(planType: PlanType): string | null {
+  if (planType === 'subscription') {
+    return pickPriceId(
+      process.env.STRIPE_PRICE_SUBSCRIPTION ||
+        process.env.NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION,
+      STRIPE_FALLBACK_PRICE_SUBSCRIPTION
+    );
+  }
+  return pickPriceId(
+    process.env.STRIPE_PRICE_ONETIME ||
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_ONETIME,
+    STRIPE_FALLBACK_PRICE_ONETIME
+  );
 }
 
 interface CheckoutRequest {
@@ -49,13 +64,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (!priceId?.startsWith('price_')) {
-      return NextResponse.json(
-        {
-          error:
-            'Missing or invalid Stripe price IDs. Set STRIPE_PRICE_ONETIME and STRIPE_PRICE_SUBSCRIPTION in your environment (values must start with price_).',
-        },
-        { status: 503 }
-      );
+      const hint =
+        planType === 'subscription'
+          ? 'Missing STRIPE_PRICE_SUBSCRIPTION (or NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION), or set STRIPE_FALLBACK_PRICE_SUBSCRIPTION in lib/stripePriceIds.ts. Value must start with price_.'
+          : 'Missing STRIPE_PRICE_ONETIME (or NEXT_PUBLIC_STRIPE_PRICE_ONETIME), or set STRIPE_FALLBACK_PRICE_ONETIME in lib/stripePriceIds.ts. Value must start with price_.';
+      return NextResponse.json({ error: hint }, { status: 503 });
     }
 
     const appUrl = (
