@@ -8,7 +8,7 @@ interface PaywallModalProps {
   onPaymentSuccess: () => void;
 }
 
-export default function PaywallModal({ onClose, onPaymentSuccess }: PaywallModalProps) {
+export default function PaywallModal({ onClose, onPaymentSuccess: _onPaymentSuccess }: PaywallModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,31 +17,33 @@ export default function PaywallModal({ onClose, onPaymentSuccess }: PaywallModal
     setError('');
 
     try {
-      const plan = planType === 'one-time' ? PRICING_PLANS.oneTime : PRICING_PLANS.subscription;
-      
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          priceId: plan.priceId,
-          planType: planType,
-        }),
+        body: JSON.stringify({ planType }),
       });
 
+      const data = (await response.json().catch(() => ({}))) as {
+        url?: string;
+        error?: string;
+      };
+
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        throw new Error(
+          data.error ||
+            `Checkout failed (${response.status}). Check server logs and Stripe configuration.`
+        );
       }
 
-      const data = await response.json();
-      
       if (data.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL received');
+        window.location.assign(data.url);
+        return;
       }
+
+      throw new Error(data.error || 'No checkout URL received from the server.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Checkout failed');
+    } finally {
       setLoading(false);
     }
   };
@@ -67,7 +69,7 @@ export default function PaywallModal({ onClose, onPaymentSuccess }: PaywallModal
           </p>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm whitespace-pre-wrap">
               {error}
             </div>
           )}
@@ -88,6 +90,7 @@ export default function PaywallModal({ onClose, onPaymentSuccess }: PaywallModal
                 ))}
               </ul>
               <button
+                type="button"
                 onClick={() => handleCheckout('one-time')}
                 disabled={loading}
                 className="w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
@@ -112,6 +115,7 @@ export default function PaywallModal({ onClose, onPaymentSuccess }: PaywallModal
                 ))}
               </ul>
               <button
+                type="button"
                 onClick={() => handleCheckout('subscription')}
                 disabled={loading}
                 className="w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
