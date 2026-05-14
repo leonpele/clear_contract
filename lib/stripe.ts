@@ -12,8 +12,9 @@ export const PRICING_PLANS = {
     price: 3,
     currency: 'EUR',
     description: '5 analyses',
-    // Replace with your actual Stripe price ID
-    priceId: 'price_one_time_plan_id_here',
+    // Must be a Price ID (price_…), not a Product ID (prod_…). Dashboard → Product → Pricing → copy price ID.
+    priceId:
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_ONETIME || 'price_one_time_plan_id_here',
     features: ['5 contract analyses', 'Full risk assessment', 'PDF & text support', 'No commitment'],
   },
   subscription: {
@@ -21,8 +22,10 @@ export const PRICING_PLANS = {
     price: 8,
     currency: 'EUR',
     description: 'Unlimited analyses',
-    // Replace with your actual Stripe price ID
-    priceId: 'price_subscription_plan_id_here',
+    // Same as one-time: use a recurring Price ID (price_…).
+    priceId:
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION ||
+      'price_subscription_plan_id_here',
     features: ['Unlimited analyses', 'Full risk assessment', 'PDF & text support', 'Cancel anytime'],
   },
 };

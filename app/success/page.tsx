@@ -3,12 +3,14 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { setPaidUser } from '@/lib/parseUsage';
 
 export default function SuccessPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to analyze after 5 seconds
+    setPaidUser();
+
     const timer = setTimeout(() => {
       router.push('/analyze');
     }, 5000);
