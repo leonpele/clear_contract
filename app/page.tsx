@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { FREE_ANALYSES_PER_MONTH } from '@/lib/parseUsage';
 
 export default function Home() {
   return (
@@ -99,7 +100,7 @@ export default function Home() {
       {/* Footer CTA */}
       <section className="px-6 py-16 bg-gray-900 text-white text-center">
         <h2 className="text-3xl font-bold mb-4">Ready to understand your contracts?</h2>
-        <p className="text-gray-300 mb-8 text-lg">Start with your first 3 analyses free.</p>
+        <p className="text-gray-300 mb-8 text-lg">Start with {FREE_ANALYSES_PER_MONTH} free analyses every month.</p>
         <Link 
           href="/analyze" 
           className="inline-block px-8 py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 transition"

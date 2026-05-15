@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { PRICING_PLANS } from '@/lib/stripe';
+import { FREE_ANALYSES_PER_MONTH } from '@/lib/parseUsage';
 
 interface PaywallModalProps {
   onClose: () => void;
@@ -65,7 +66,7 @@ export default function PaywallModal({ onClose, onPaymentSuccess: _onPaymentSucc
         {/* Content */}
         <div className="p-6 space-y-6">
           <p className="text-gray-600">
-            You've used your free 3 analyses. Choose a plan to continue analyzing contracts.
+            You've used your {FREE_ANALYSES_PER_MONTH} free analyses this month. Choose a plan to continue analyzing contracts.
           </p>
 
           {error && (

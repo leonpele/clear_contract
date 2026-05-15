@@ -1,21 +1,21 @@
 'use client';
 
-const FEEDBACK_FORM_URL = 'https://tally.so/r/zx2kR0';
+import type { AnalysisResult } from '@/lib/analysisTypes';
+import { RiskScoreDisplay } from '@/components/contract-risk/RiskScoreDisplay';
 
-interface AnalysisResult {
-  summary: string;
-  risky_clauses: Array<{ quote: string; explanation: string }>;
-  favorable_clauses: Array<{ quote: string; explanation: string }>;
-  key_numbers: Array<{ label: string; value: string }>;
-}
+const FEEDBACK_FORM_URL = 'https://tally.so/r/zx2kR0';
 
 interface ResultsPanelProps {
   results: AnalysisResult;
 }
 
 export default function ResultsPanel({ results }: ResultsPanelProps) {
+  const scoreKey = `${results.risk_score.percentage}-${results.risk_score.level}-${results.risk_score.explanation.slice(0, 120)}`;
+
   return (
-    <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+    <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto overflow-x-hidden">
+      <RiskScoreDisplay key={scoreKey} score={results.risk_score} />
+
       {/* Summary */}
       <div className="bg-gray-100 border-l-4 border-gray-400 p-4 rounded-lg">
         <h3 className="font-semibold text-gray-900 mb-2">Summary</h3>
@@ -74,8 +74,8 @@ export default function ResultsPanel({ results }: ResultsPanelProps) {
       {results.key_numbers.length > 0 && (
         <div>
           <h3 className="font-semibold text-gray-900 mb-3">🔢 Key Numbers</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-1 px-1">
+            <table className="w-full min-w-[280px] text-sm">
               <thead>
                 <tr className="border-b-2 border-gray-300">
                   <th className="text-left p-2 text-gray-700 font-semibold">Label</th>

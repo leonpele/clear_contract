@@ -4,14 +4,8 @@ import { useState, useEffect } from 'react';
 import UploadZone from '@/components/UploadZone';
 import ResultsPanel from '@/components/ResultsPanel';
 import PaywallModal from '@/components/PaywallModal';
-import { parseUsage, incrementUsage, isPaidUser, setPaidUser } from '@/lib/parseUsage';
-
-interface AnalysisResult {
-  summary: string;
-  risky_clauses: Array<{ quote: string; explanation: string }>;
-  favorable_clauses: Array<{ quote: string; explanation: string }>;
-  key_numbers: Array<{ label: string; value: string }>;
-}
+import { parseUsage, incrementUsage, isPaidUser, setPaidUser, FREE_ANALYSES_PER_MONTH } from '@/lib/parseUsage';
+import type { AnalysisResult } from '@/lib/analysisTypes';
 
 export default function AnalyzePage() {
   const [contractText, setContractText] = useState('');
@@ -40,7 +34,7 @@ export default function AnalyzePage() {
     }
 
     // Check free tier limit
-    if (!paid && usageCount >= 3) {
+    if (!paid && usageCount >= FREE_ANALYSES_PER_MONTH) {
       setShowPaywall(true);
       return;
     }
@@ -80,17 +74,8 @@ export default function AnalyzePage() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-risk-red">ContractClear</h1>
-          </div>
-          <div className="text-sm text-gray-600">
-            {paid ? (
-              <span className="text-safe-green font-semibold">✓ Unlimited access</span>
-            ) : (
-              <span>{3 - usageCount} analyses remaining</span>
-            )}
-          </div>
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <h1 className="text-2xl font-bold text-risk-red">ContractClear</h1>
         </div>
       </div>
 

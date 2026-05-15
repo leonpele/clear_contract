@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import type { AnalysisResult } from '@/lib/analysisTypes';
+import { normalizeAnalysisResponse } from '@/lib/normalizeAnalysisResponse';
 
 interface AnalysisRequest {
   text: string;
 }
 
-interface AnalysisResponse {
-  summary: string;
-  risky_clauses: Array<{ quote: string; explanation: string }>;
-  favorable_clauses: Array<{ quote: string; explanation: string }>;
-  key_numbers: Array<{ label: string; value: string }>;
-}
-
 const SYSTEM_PROMPT = `You are a legal document expert. Analyze the contract provided and return a JSON object with this exact structure:
 {
   "summary": "3-sentence plain language summary of what this contract is about",
+  "risk_score": {
+    "percentage": 0,
+    "level": "low",
+    "explanation": "2-4 sentences: why this score was assigned, referencing concrete themes from the contract"
+  },
   "risky_clauses": [
     {
       "quote": "exact problematic clause from the contract",
@@ -34,6 +34,13 @@ const SYSTEM_PROMPT = `You are a legal document expert. Analyze the contract pro
     }
   ]
 }
+
+RISK SCORING (risk_score):
+- "percentage" is an integer from 0 (safest) to 100 (highest risk) for the contract as a whole.
+- "level" MUST be exactly one of: "low", "medium", "high", aligned with percentage: low = 0-33, medium = 34-66, high = 67-100.
+- Weight the score especially when you find issues related to: automatic renewal; termination penalties or harsh exit terms; exclusivity or non-compete; broad liability limitations or waivers; unclear or one-sided payment terms; IP ownership transfer or broad IP assignment beyond what is typical.
+- The explanation must briefly cite which of these themes (if any) drove the score, without inventing clauses not in the text.
+
 Return ONLY the JSON object, no markdown, no preamble.`;
 
 export async function POST(request: NextRequest) {
@@ -70,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     const message = await openai.chat.completions.create({
       model: 'gpt-4-turbo',
-      max_tokens: 1500,
+      max_tokens: 2200,
       temperature: 0,
       messages: [
         {
@@ -84,20 +91,20 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    // Extract text from response
     const responseText = message.choices[0]?.message.content || '';
 
-    // Parse JSON response
-    let analysis: AnalysisResponse;
+    let parsed: Record<string, unknown>;
     try {
-      analysis = JSON.parse(responseText);
+      parsed = JSON.parse(responseText) as Record<string, unknown>;
     } catch (parseError) {
-      console.error('Failed to parse Anthropic response:', responseText);
+      console.error('Failed to parse OpenAI response:', responseText);
       return NextResponse.json(
         { error: 'Failed to parse analysis response' },
         { status: 500 }
       );
     }
+
+    const analysis: AnalysisResult = normalizeAnalysisResponse(parsed);
 
     return NextResponse.json(analysis);
   } catch (error) {
