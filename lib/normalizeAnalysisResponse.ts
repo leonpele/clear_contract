@@ -1,4 +1,10 @@
-import type { AnalysisResult, ContractRiskScore, RiskLevel } from './analysisTypes';
+import type {
+  AnalysisResult,
+  ClauseSeverity,
+  ContractRiskScore,
+  RiskLevel,
+  RiskyClause,
+} from './analysisTypes';
 
 function levelFromPercentage(p: number): RiskLevel {
   if (p <= 33) return 'low';
@@ -20,10 +26,31 @@ function defaultExplanation(level: RiskLevel, riskyCount: number): string {
   return 'Multiple high-impact risk patterns were detected. Negotiate or get legal advice before committing, especially around liability, IP, and exit terms.';
 }
 
+function normalizeRiskyClauses(raw: unknown): RiskyClause[] {
+  if (!Array.isArray(raw)) return [];
+  const clauses: RiskyClause[] = [];
+  raw.forEach((item, index) => {
+    const row = item as Record<string, unknown>;
+    const quote = typeof row.quote === 'string' ? row.quote : '';
+    const explanation =
+      typeof row.explanation === 'string' ? row.explanation : '';
+    if (!quote.trim()) return;
+    const sev = row.severity;
+    const severity: ClauseSeverity =
+      sev === 'warning'
+        ? 'warning'
+        : sev === 'high'
+          ? 'high'
+          : index === 0
+            ? 'high'
+            : 'warning';
+    clauses.push({ quote, explanation, severity });
+  });
+  return clauses;
+}
+
 export function normalizeAnalysisResponse(raw: Record<string, unknown>): AnalysisResult {
-  const risky_clauses = Array.isArray(raw.risky_clauses)
-    ? (raw.risky_clauses as AnalysisResult['risky_clauses'])
-    : [];
+  const risky_clauses = normalizeRiskyClauses(raw.risky_clauses);
   const favorable_clauses = Array.isArray(raw.favorable_clauses)
     ? (raw.favorable_clauses as AnalysisResult['favorable_clauses'])
     : [];

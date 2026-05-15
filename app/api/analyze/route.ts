@@ -17,8 +17,9 @@ const SYSTEM_PROMPT = `You are a legal document expert. Analyze the contract pro
   },
   "risky_clauses": [
     {
-      "quote": "exact problematic clause from the contract",
-      "explanation": "plain language explanation of why this is risky"
+      "quote": "exact problematic clause from the contract — copy verbatim so it can be found in the text",
+      "explanation": "plain language explanation of why this is risky",
+      "severity": "high"
     }
   ],
   "favorable_clauses": [
@@ -40,6 +41,13 @@ RISK SCORING (risk_score):
 - "level" MUST be exactly one of: "low", "medium", "high", aligned with percentage: low = 0-33, medium = 34-66, high = 67-100.
 - Weight the score especially when you find issues related to: automatic renewal; termination penalties or harsh exit terms; exclusivity or non-compete; broad liability limitations or waivers; unclear or one-sided payment terms; IP ownership transfer or broad IP assignment beyond what is typical.
 - The explanation must briefly cite which of these themes (if any) drove the score, without inventing clauses not in the text.
+
+RISKY CLAUSE SEVERITY:
+- For each risky_clauses item, set "severity" to "high" (serious legal/financial exposure) or "warning" (worth reviewing but less severe).
+- Use "high" for automatic renewal, harsh termination, broad liability waivers, IP assignment, exclusivity.
+- Use "warning" for moderately unfavorable but negotiable terms.
+
+QUOTES: Every "quote" must be copied exactly from the contract (same wording) so it can be highlighted in the original text.
 
 Return ONLY the JSON object, no markdown, no preamble.`;
 

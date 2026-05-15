@@ -2,78 +2,32 @@
 
 import type { AnalysisResult } from '@/lib/analysisTypes';
 import { RiskScoreDisplay } from '@/components/contract-risk/RiskScoreDisplay';
+import { ContractHighlightSection } from '@/components/contract-highlight/ContractHighlightSection';
 
 const FEEDBACK_FORM_URL = 'https://tally.so/r/zx2kR0';
 
 interface ResultsPanelProps {
   results: AnalysisResult;
+  contractText: string;
 }
 
-export default function ResultsPanel({ results }: ResultsPanelProps) {
+export default function ResultsPanel({ results, contractText }: ResultsPanelProps) {
   const scoreKey = `${results.risk_score.percentage}-${results.risk_score.level}-${results.risk_score.explanation.slice(0, 120)}`;
 
   return (
-    <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto overflow-x-hidden">
+    <div className="space-y-6 max-h-[calc(100vh-120px)] overflow-y-auto overflow-x-hidden">
       <RiskScoreDisplay key={scoreKey} score={results.risk_score} />
 
-      {/* Summary */}
       <div className="bg-gray-100 border-l-4 border-gray-400 p-4 rounded-lg">
         <h3 className="font-semibold text-gray-900 mb-2">Summary</h3>
         <p className="text-gray-700 text-sm leading-relaxed">{results.summary}</p>
       </div>
 
-      {/* Risky Clauses */}
-      {results.risky_clauses.length > 0 && (
-        <div>
-          <h3 className="font-semibold text-risk-red mb-3 flex items-center gap-2">
-            ⚠️ Risky Clauses ({results.risky_clauses.length})
-          </h3>
-          <div className="space-y-3">
-            {results.risky_clauses.map((clause, idx) => (
-              <div
-                key={idx}
-                className="border-l-4 border-risk-red bg-red-50 p-4 rounded-lg"
-              >
-                <p className="text-sm text-gray-600 italic mb-2 border-l-2 border-red-200 pl-2">
-                  "{clause.quote}"
-                </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Why it's risky:</strong> {clause.explanation}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <ContractHighlightSection contractText={contractText} results={results} />
 
-      {/* Favorable Clauses */}
-      {results.favorable_clauses.length > 0 && (
-        <div>
-          <h3 className="font-semibold text-safe-green mb-3 flex items-center gap-2">
-            ✓ Favorable Clauses ({results.favorable_clauses.length})
-          </h3>
-          <div className="space-y-3">
-            {results.favorable_clauses.map((clause, idx) => (
-              <div
-                key={idx}
-                className="border-l-4 border-safe-green bg-green-50 p-4 rounded-lg"
-              >
-                <p className="text-sm text-gray-600 italic mb-2 border-l-2 border-green-200 pl-2">
-                  "{clause.quote}"
-                </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Why it's good:</strong> {clause.explanation}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Key Numbers */}
       {results.key_numbers.length > 0 && (
         <div>
-          <h3 className="font-semibold text-gray-900 mb-3">🔢 Key Numbers</h3>
+          <h3 className="font-semibold text-gray-900 mb-3">Key numbers</h3>
           <div className="overflow-x-auto -mx-1 px-1">
             <table className="w-full min-w-[280px] text-sm">
               <thead>

@@ -81,9 +81,13 @@ export default function AnalyzePage() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div
+          className={
+            results ? 'flex flex-col gap-8' : 'grid lg:grid-cols-2 gap-8'
+          }
+        >
           {/* Input Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:max-w-xl">
             <h2 className="text-2xl font-semibold text-gray-900">Upload or paste your contract</h2>
             <p className="text-gray-600">Max 50,000 characters</p>
 
@@ -98,7 +102,9 @@ export default function AnalyzePage() {
                 setError('');
               }}
               placeholder="Paste contract text here..."
-              className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-risk-red focus:border-transparent resize-none"
+              className={`w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-risk-red focus:border-transparent resize-none ${
+                results ? 'h-40' : 'h-64'
+              }`}
             />
 
             <div className="text-sm text-gray-500">
@@ -131,7 +137,7 @@ export default function AnalyzePage() {
           {/* Results Section */}
           <div>
             {results ? (
-              <ResultsPanel results={results} />
+              <ResultsPanel results={results} contractText={contractText} />
             ) : (
               <div className="h-full flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 text-center">
                 <div className="text-5xl mb-4">📄</div>
