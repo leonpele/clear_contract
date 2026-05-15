@@ -3,11 +3,14 @@
 import type { AnalysisResult } from '@/lib/analysisTypes';
 import { RiskScoreDisplay } from '@/components/contract-risk/RiskScoreDisplay';
 import { ContractHighlightSection } from '@/components/contract-highlight/ContractHighlightSection';
-import { Section, SectionDivider } from '@/components/ui/Section';
+import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 
 const FEEDBACK_FORM_URL = 'https://tally.so/r/zx2kR0';
+
+/** Guaranteed gap above section (padding does not collapse like hr margins). */
+const RESULT_SECTION_LEAD = 'pt-10 sm:pt-14 border-t border-border';
 
 interface ResultsPanelProps {
   results: AnalysisResult;
@@ -25,14 +28,13 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
   ].slice(0, 5);
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-8">
       <Section title="Risk score" subtitle="Overall assessment based on detected terms.">
         <RiskScoreDisplay key={scoreKey} score={results.risk_score} />
       </Section>
 
-      <SectionDivider spacious />
-
       <Section
+        className={RESULT_SECTION_LEAD}
         title="Simplified summary"
         subtitle="Plain-language overview of what this agreement covers."
       >
@@ -41,9 +43,8 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
         </Card>
       </Section>
 
-      <SectionDivider spacious />
-
       <Section
+        className={RESULT_SECTION_LEAD}
         title="Highlighted clauses"
         subtitle="Passages from your contract linked to explanations. Select text to jump to details."
       >
@@ -52,8 +53,8 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
 
       {recommendations.length > 0 && (
         <>
-          <SectionDivider spacious />
           <Section
+            className={RESULT_SECTION_LEAD}
             title="Recommendations"
             subtitle="Practical next steps before you sign or negotiate."
           >
@@ -76,8 +77,11 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
 
       {results.key_numbers.length > 0 && (
         <>
-          <SectionDivider spacious />
-          <Section title="Key numbers" subtitle="Dates, amounts, and durations extracted.">
+          <Section
+            className={RESULT_SECTION_LEAD}
+            title="Key numbers"
+            subtitle="Dates, amounts, and durations extracted."
+          >
             <Card className="overflow-hidden p-0">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[280px] text-sm">
@@ -111,9 +115,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
         </>
       )}
 
-      <SectionDivider spacious />
-
-      <div className="space-y-4">
+      <div className={`${RESULT_SECTION_LEAD} space-y-4`}>
         <LegalDisclaimer />
         <p className="text-sm text-ink-muted">
           How was your experience?{' '}

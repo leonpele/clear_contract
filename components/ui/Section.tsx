@@ -5,11 +5,12 @@ interface SectionProps {
   subtitle?: string;
   children: ReactNode;
   id?: string;
+  className?: string;
 }
 
-export function Section({ title, subtitle, children, id }: SectionProps) {
+export function Section({ title, subtitle, children, id, className }: SectionProps) {
   return (
-    <section id={id} className="space-y-5">
+    <section id={id} className={['space-y-5', className].filter(Boolean).join(' ')}>
       <header className="space-y-2">
         <h2>{title}</h2>
         {subtitle && <p className="prose-body text-sm">{subtitle}</p>}
