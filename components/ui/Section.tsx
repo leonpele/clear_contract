@@ -19,6 +19,20 @@ export function Section({ title, subtitle, children, id }: SectionProps) {
   );
 }
 
-export function SectionDivider() {
-  return <hr className="border-0 border-t border-border my-16 sm:my-20" aria-hidden />;
+interface SectionDividerProps {
+  /** Extra vertical space between result sections (summary, highlights, etc.) */
+  spacious?: boolean;
+}
+
+export function SectionDivider({ spacious = false }: SectionDividerProps) {
+  return (
+    <hr
+      className={
+        spacious
+          ? 'border-0 border-t border-border my-28 sm:my-36'
+          : 'border-0 border-t border-border my-16 sm:my-20'
+      }
+      aria-hidden
+    />
+  );
 }

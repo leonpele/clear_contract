@@ -30,7 +30,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
         <RiskScoreDisplay key={scoreKey} score={results.risk_score} />
       </Section>
 
-      <SectionDivider />
+      <SectionDivider spacious />
 
       <Section
         title="Simplified summary"
@@ -41,7 +41,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
         </Card>
       </Section>
 
-      <SectionDivider />
+      <SectionDivider spacious />
 
       <Section
         title="Highlighted clauses"
@@ -52,7 +52,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
 
       {recommendations.length > 0 && (
         <>
-          <SectionDivider />
+          <SectionDivider spacious />
           <Section
             title="Recommendations"
             subtitle="Practical next steps before you sign or negotiate."
@@ -76,7 +76,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
 
       {results.key_numbers.length > 0 && (
         <>
-          <SectionDivider />
+          <SectionDivider spacious />
           <Section title="Key numbers" subtitle="Dates, amounts, and durations extracted.">
             <Card className="overflow-hidden p-0">
               <div className="overflow-x-auto">
@@ -111,7 +111,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
         </>
       )}
 
-      <SectionDivider />
+      <SectionDivider spacious />
 
       <div className="space-y-4">
         <LegalDisclaimer />
