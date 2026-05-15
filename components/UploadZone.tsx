@@ -7,7 +7,10 @@ interface UploadZoneProps {
   currentText: string;
 }
 
-export default function UploadZone({ onTextExtracted, currentText }: UploadZoneProps) {
+export default function UploadZone({
+  onTextExtracted,
+  currentText,
+}: UploadZoneProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,8 +46,9 @@ export default function UploadZone({ onTextExtracted, currentText }: UploadZoneP
       const data = await response.json();
       onTextExtracted(data.text);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to extract text from PDF');
-      console.error('PDF upload error:', err);
+      setError(
+        err instanceof Error ? err.message : 'Failed to extract text from PDF'
+      );
     } finally {
       setUploading(false);
     }
@@ -69,8 +73,8 @@ export default function UploadZone({ onTextExtracted, currentText }: UploadZoneP
       <div
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-risk-red hover:bg-red-50 transition"
         onClick={() => fileInputRef.current?.click()}
+        className="rounded-lg border border-dashed border-border bg-surface-muted px-6 py-8 text-center cursor-pointer hover:border-border-strong hover:bg-surface-subtle transition-colors duration-200"
       >
         <input
           ref={fileInputRef}
@@ -84,24 +88,23 @@ export default function UploadZone({ onTextExtracted, currentText }: UploadZoneP
           disabled={uploading}
           className="hidden"
         />
-        
-        <div className="text-3xl mb-2">📤</div>
-        <p className="font-semibold text-gray-900">
-          {uploading ? 'Uploading...' : 'Upload PDF'}
+
+        <p className="text-sm font-medium text-ink mb-1">
+          {uploading ? 'Uploading…' : 'Upload PDF'}
         </p>
-        <p className="text-sm text-gray-600">or drag and drop</p>
+        <p className="text-xs text-ink-muted">or drag and drop</p>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <p className="rounded-lg border border-risk-high-border bg-risk-high-bg px-3 py-2 text-sm text-risk-high">
           {error}
-        </div>
+        </p>
       )}
 
       {currentText && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-safe-green text-sm">
-          ✓ Contract text loaded ({currentText.length} characters)
-        </div>
+        <p className="rounded-lg border border-risk-low-border bg-risk-low-bg px-3 py-2 text-sm text-risk-low">
+          Contract text loaded ({currentText.length.toLocaleString()} characters)
+        </p>
       )}
     </div>
   );

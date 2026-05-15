@@ -6,6 +6,7 @@ import { buildClauseHighlights } from '@/lib/clauseHighlights';
 import { HighlightLegend } from './HighlightLegend';
 import { HighlightedContractText } from './HighlightedContractText';
 import { ClauseExplanationCard } from './ClauseExplanationCard';
+import { Card } from '@/components/ui/Card';
 
 interface ContractHighlightSectionProps {
   contractText: string;
@@ -42,40 +43,33 @@ export function ContractHighlightSection({
   }, []);
 
   return (
-    <section className="space-y-3" aria-labelledby="highlight-section-title">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-        <h3
-          id="highlight-section-title"
-          className="font-semibold text-gray-900 text-lg"
-        >
-          Contract highlights
-        </h3>
-        <HighlightLegend />
-      </div>
+    <div className="space-y-6">
+      <HighlightLegend />
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-        <div className="min-w-0">
-          <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide font-medium">
-            Original text
-          </p>
-          <HighlightedContractText
-            contractText={contractText}
-            highlights={highlights}
-            activeClauseId={activeClauseId}
-            onClauseClick={scrollToExplanation}
-          />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-8">
+        <div className="min-w-0 space-y-2">
+          <p className="label-caps">Original contract</p>
+          <Card className="p-0 overflow-hidden shadow-none">
+            <HighlightedContractText
+              contractText={contractText}
+              highlights={highlights}
+              activeClauseId={activeClauseId}
+              onClauseClick={scrollToExplanation}
+            />
+          </Card>
         </div>
 
-        <div className="min-w-0 flex flex-col max-h-[min(70vh,560px)]">
-          <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide font-medium shrink-0">
-            Explanations
-          </p>
-          <div className="space-y-3 overflow-y-auto overflow-x-hidden pr-1 flex-1">
+        <div className="min-w-0 flex flex-col gap-2 max-h-[min(65vh,520px)]">
+          <p className="label-caps shrink-0">Explanations</p>
+          <div className="space-y-3 overflow-y-auto overflow-x-hidden pr-1 flex-1 min-h-0">
             {highlights.length === 0 ? (
-              <p className="text-sm text-gray-500 italic">
-                Quotes from the analysis could not be located in your pasted
-                text. Try pasting the exact contract wording.
-              </p>
+              <Card muted>
+                <p className="text-sm text-ink-muted leading-relaxed">
+                  Quotes from the analysis could not be matched in your pasted
+                  text. Ensure the contract wording matches exactly, or paste
+                  the full clause text.
+                </p>
+              </Card>
             ) : (
               highlights.map((h) => (
                 <ClauseExplanationCard
@@ -89,6 +83,6 @@ export function ContractHighlightSection({
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

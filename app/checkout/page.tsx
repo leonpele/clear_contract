@@ -3,14 +3,15 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 
 type PlanType = 'one-time' | 'subscription';
 
 function Spinner() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
-      <div className="animate-spin h-10 w-10 border-4 border-risk-red border-t-transparent rounded-full mb-4" />
-      <p className="text-gray-600">Redirecting to secure payment…</p>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-surface">
+      <span className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-primary mb-4" />
+      <p className="text-sm text-ink-muted">Redirecting to secure payment…</p>
     </div>
   );
 }
@@ -48,7 +49,7 @@ function CheckoutRedirectInner() {
         if (!res.ok) {
           setError(
             data.error ||
-              `Checkout failed (${res.status}). Check Stripe keys and price IDs.`
+              `Checkout failed (${res.status}). Check Stripe configuration.`
           );
           return;
         }
@@ -67,28 +68,27 @@ function CheckoutRedirectInner() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center max-w-lg mx-auto bg-white">
-        <h1 className="text-xl font-semibold text-gray-900 mb-3">
-          Payment could not start
-        </h1>
-        <p className="text-red-700 mb-4 text-sm whitespace-pre-wrap">{error}</p>
-        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-          Add <code className="bg-gray-100 px-1 rounded">STRIPE_PRICE_ONETIME</code> and{' '}
-          <code className="bg-gray-100 px-1 rounded">STRIPE_PRICE_SUBSCRIPTION</code> in
-          Vercel (or <code className="bg-gray-100 px-1 rounded">.env.local</code>) with
-          values from Stripe → Products → each price → ID starting with{' '}
-          <code className="bg-gray-100 px-1">price_</code> (not <code className="bg-gray-100 px-1">prod_</code>).
-          Redeploy after saving. Optional: paste the same IDs in{' '}
-          <code className="bg-gray-100 px-1">lib/stripePriceIds.ts</code>.
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center max-w-lg mx-auto bg-surface">
+        <h1 className="text-xl mb-3">Payment could not start</h1>
+        <p className="text-risk-high mb-4 text-sm whitespace-pre-wrap">{error}</p>
+        <p className="prose-body text-sm mb-6">
+          Verify your Stripe price IDs in environment variables, then try again.
         </p>
-        <div className="flex gap-4">
-          <Link href="/" className="text-risk-red font-medium underline">
+        <div className="flex gap-6 text-sm">
+          <Link
+            href="/"
+            className="text-primary hover:text-primary-hover font-medium transition-colors duration-200"
+          >
             Home
           </Link>
-          <Link href="/analyze" className="text-gray-700 underline">
+          <Link
+            href="/analyze"
+            className="text-ink-secondary hover:text-ink transition-colors duration-200"
+          >
             Analyze
           </Link>
         </div>
+        <LegalDisclaimer className="mt-8" />
       </div>
     );
   }

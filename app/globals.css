@@ -2,17 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-surface text-ink text-[15px] leading-relaxed;
+  }
+
+  h1 {
+    @apply text-2xl sm:text-3xl font-semibold tracking-tight text-ink leading-tight;
+  }
+
+  h2 {
+    @apply text-lg sm:text-xl font-semibold tracking-tight text-ink leading-snug;
+  }
+
+  h3 {
+    @apply text-base font-semibold text-ink leading-snug;
+  }
 }
 
-html {
-  scroll-behavior: smooth;
-}
+@layer components {
+  .prose-body {
+    @apply text-[15px] leading-7 text-ink-secondary;
+  }
 
-body {
-  background-color: #ffffff;
-  color: #1f2937;
+  .label-caps {
+    @apply text-xs font-medium uppercase tracking-wider text-ink-muted;
+  }
 }

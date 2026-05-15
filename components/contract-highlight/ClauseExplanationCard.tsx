@@ -9,6 +9,12 @@ interface ClauseExplanationCardProps {
   onSelect: () => void;
 }
 
+const severityLabel: Record<ClauseHighlight['severity'], string> = {
+  high: 'High risk',
+  warning: 'Warning',
+  info: 'Important',
+};
+
 export function ClauseExplanationCard({
   highlight,
   isActive,
@@ -35,23 +41,18 @@ export function ClauseExplanationCard({
         }
       }}
     >
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <h4 className="text-sm font-semibold text-gray-900">
-          {highlight.title}
-        </h4>
-        <span className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
-          {highlight.severity === 'high'
-            ? 'High risk'
-            : highlight.severity === 'warning'
-              ? 'Warning'
-              : 'Important'}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <h4 className="text-sm font-medium text-ink">{highlight.title}</h4>
+        <span className="label-caps shrink-0 normal-case tracking-normal text-[11px]">
+          {severityLabel[highlight.severity]}
         </span>
       </div>
-      <p className="text-sm text-gray-600 italic mb-2 border-l-2 border-gray-300 pl-2 line-clamp-3">
+      <blockquote className="mb-3 border-l-2 border-border pl-3 text-sm italic text-ink-muted leading-relaxed">
         &ldquo;{highlight.quote}&rdquo;
-      </p>
-      <p className="text-sm text-gray-700">
-        <strong>{label}:</strong> {highlight.explanation}
+      </blockquote>
+      <p className="text-sm leading-relaxed text-ink-secondary">
+        <span className="font-medium text-ink">{label}:</span>{' '}
+        {highlight.explanation}
       </p>
     </article>
   );

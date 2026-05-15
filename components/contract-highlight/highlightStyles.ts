@@ -1,20 +1,25 @@
 import type { ClauseSeverity } from '@/lib/analysisTypes';
+import type { RiskLevel } from '@/lib/analysisTypes';
 
 export const HIGHLIGHT_LEGEND: Array<{
   severity: ClauseSeverity;
   label: string;
   swatch: string;
 }> = [
-  { severity: 'high', label: 'High risk', swatch: 'bg-red-200 border-red-400' },
+  {
+    severity: 'high',
+    label: 'High risk',
+    swatch: 'bg-risk-high-bg border-risk-high-border',
+  },
   {
     severity: 'warning',
     label: 'Warning',
-    swatch: 'bg-amber-200 border-amber-400',
+    swatch: 'bg-risk-medium-bg border-risk-medium-border',
   },
   {
     severity: 'info',
     label: 'Important',
-    swatch: 'bg-sky-200 border-sky-400',
+    swatch: 'bg-surface-subtle border-border',
   },
 ];
 
@@ -23,20 +28,20 @@ export function highlightClassName(
   isActive: boolean
 ): string {
   const base =
-    'rounded-sm border-b-2 cursor-pointer transition-colors duration-150 underline-offset-2 decoration-2';
+    'rounded px-0.5 cursor-pointer transition-colors duration-200 border-b border-transparent';
 
   const bySeverity: Record<ClauseSeverity, string> = {
     high:
-      'bg-red-100/90 border-red-500 text-red-950 hover:bg-red-200 decoration-red-500',
+      'bg-risk-high-bg/80 text-risk-high border-risk-high-border hover:bg-risk-high-bg',
     warning:
-      'bg-amber-100/90 border-amber-500 text-amber-950 hover:bg-amber-200 decoration-amber-500',
-    info: 'bg-sky-100/90 border-sky-500 text-sky-950 hover:bg-sky-200 decoration-sky-500',
+      'bg-risk-medium-bg/80 text-risk-medium border-risk-medium-border hover:bg-risk-medium-bg',
+    info: 'bg-surface-subtle text-ink-secondary border-border hover:bg-surface-muted',
   };
 
   const active: Record<ClauseSeverity, string> = {
-    high: 'ring-2 ring-red-500 ring-offset-1 bg-red-200',
-    warning: 'ring-2 ring-amber-500 ring-offset-1 bg-amber-200',
-    info: 'ring-2 ring-sky-500 ring-offset-1 bg-sky-200',
+    high: 'ring-1 ring-risk-high-border bg-risk-high-bg',
+    warning: 'ring-1 ring-risk-medium-border bg-risk-medium-bg',
+    info: 'ring-1 ring-border-strong bg-surface-muted',
   };
 
   return `${base} ${bySeverity[severity]} ${isActive ? active[severity] : ''}`;
@@ -46,17 +51,37 @@ export function explanationCardClass(
   severity: ClauseSeverity,
   isActive: boolean
 ): string {
-  const base = 'p-4 rounded-lg border-l-4 transition-all duration-200 scroll-mt-24';
+  const base =
+    'p-4 rounded-lg border transition-all duration-200 scroll-mt-28 cursor-pointer';
   const map: Record<ClauseSeverity, string> = {
-    high: 'border-risk-red bg-red-50',
-    warning: 'border-amber-500 bg-amber-50',
-    info: 'border-sky-500 bg-sky-50',
+    high: 'border-risk-high-border bg-risk-high-bg/50 hover:bg-risk-high-bg',
+    warning:
+      'border-risk-medium-border bg-risk-medium-bg/50 hover:bg-risk-medium-bg',
+    info: 'border-border bg-surface-muted hover:bg-surface-subtle',
   };
-  const active = isActive ? 'ring-2 ring-offset-1 shadow-md' : '';
-  const ring: Record<ClauseSeverity, string> = {
-    high: 'ring-risk-red',
-    warning: 'ring-amber-500',
-    info: 'ring-sky-500',
-  };
-  return `${base} ${map[severity]} ${isActive ? `${active} ${ring[severity]}` : ''}`;
+  const active = isActive
+    ? 'ring-1 ring-border-strong shadow-card border-border-strong'
+    : '';
+  return `${base} ${map[severity]} ${active}`;
 }
+
+export const riskLevelStyles: Record<
+  RiskLevel,
+  { badge: string; bar: string; score: string }
+> = {
+  low: {
+    badge: 'bg-risk-low-bg text-risk-low border-risk-low-border',
+    bar: 'bg-risk-low',
+    score: 'text-risk-low',
+  },
+  medium: {
+    badge: 'bg-risk-medium-bg text-risk-medium border-risk-medium-border',
+    bar: 'bg-risk-medium',
+    score: 'text-risk-medium',
+  },
+  high: {
+    badge: 'bg-risk-high-bg text-risk-high border-risk-high-border',
+    bar: 'bg-risk-high',
+    score: 'text-risk-high',
+  },
+};

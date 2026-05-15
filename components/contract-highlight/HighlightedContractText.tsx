@@ -25,16 +25,16 @@ export function HighlightedContractText({
 
   if (highlights.length === 0) {
     return (
-      <p className="text-sm text-gray-500 italic p-4">
-        No clause quotes could be matched in the contract text. Check the
-        explanations panel for details.
+      <p className="p-5 text-sm text-ink-muted leading-relaxed">
+        No passages could be matched for highlighting. Review the summary and
+        recommendations above.
       </p>
     );
   }
 
   return (
     <div
-      className="text-sm leading-relaxed text-gray-800 whitespace-pre-wrap break-words max-h-[min(70vh,560px)] overflow-y-auto p-4 rounded-lg border border-gray-200 bg-gray-50/80"
+      className="text-[14px] leading-7 text-ink-secondary whitespace-pre-wrap break-words max-h-[min(65vh,520px)] overflow-y-auto p-5"
       role="document"
       aria-label="Contract with highlighted clauses"
     >

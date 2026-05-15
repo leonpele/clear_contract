@@ -2,112 +2,118 @@
 
 import Link from 'next/link';
 import { FREE_ANALYSES_PER_MONTH } from '@/lib/parseUsage';
+import { AppHeader } from '@/components/ui/AppHeader';
+import { LinkButton } from '@/components/ui/LinkButton';
+import { Card } from '@/components/ui/Card';
+import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
+
+const features = [
+  {
+    title: 'Spot risky clauses',
+    description:
+      'AI flags problematic terms and explains why they matter in plain language.',
+  },
+  {
+    title: 'Plain-language summary',
+    description:
+      'Legal jargon translated into clear explanations you can act on.',
+  },
+  {
+    title: 'Key numbers extracted',
+    description:
+      'Important dates, amounts, and durations surfaced in one place.',
+  },
+];
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="flex justify-between items-center px-6 py-4 max-w-6xl mx-auto">
-        <div className="text-2xl font-bold text-risk-red">ContractClear</div>
-        <Link href="/analyze" className="px-6 py-2 bg-risk-red text-white rounded-lg hover:bg-red-700">
-          Get Started
-        </Link>
-      </nav>
+    <div className="min-h-screen bg-surface">
+      <AppHeader
+        action={<LinkButton href="/analyze">Get started</LinkButton>}
+      />
 
-      {/* Hero Section */}
-      <section className="px-6 py-24 max-w-4xl mx-auto text-center">
-        <h1 className="text-5xl font-bold text-gray-900 mb-6">
-          Understand any contract in 30 seconds
-        </h1>
-        <p className="text-xl text-gray-600 mb-12">
-          Upload your PDF or paste your text — our AI highlights risks, explains jargon, and tells you what actually matters.
-        </p>
-        <Link 
-          href="/analyze" 
-          className="inline-block px-8 py-4 bg-risk-red text-white text-lg font-semibold rounded-lg hover:bg-red-700 transition"
-        >
-          Analyze Your Contract
-        </Link>
-      </section>
+      <main>
+        <section className="mx-auto max-w-content px-5 py-16 sm:px-8 sm:py-24 text-center">
+          <h1 className="mb-5 text-3xl sm:text-4xl">
+            Understand any contract in minutes
+          </h1>
+          <p className="prose-body mx-auto max-w-lg mb-8">
+            Upload your PDF or paste your text. We highlight risks, explain
+            jargon, and surface what actually matters before you sign.
+          </p>
+          <LinkButton href="/analyze" className="px-6 py-3 text-base">
+            Analyze your contract
+          </LinkButton>
+          <LegalDisclaimer className="mt-8 max-w-md mx-auto" />
+        </section>
 
-      {/* Feature Cards */}
-      <section className="px-6 py-16 max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
-            <div className="text-risk-red text-3xl mb-4">⚠️</div>
-            <h3 className="text-xl font-semibold mb-3">Spot risky clauses</h3>
-            <p className="text-gray-600">AI identifies potentially problematic terms and explains why they matter to you.</p>
+        <section className="border-t border-border bg-surface-muted">
+          <div className="mx-auto max-w-wide px-5 py-16 sm:px-8 sm:py-20">
+            <div className="grid gap-6 md:grid-cols-3">
+              {features.map((f) => (
+                <Card key={f.title} className="shadow-none">
+                  <h3 className="mb-2">{f.title}</h3>
+                  <p className="prose-body text-sm">{f.description}</p>
+                </Card>
+              ))}
+            </div>
           </div>
-          
-          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
-            <div className="text-safe-green text-3xl mb-4">📖</div>
-            <h3 className="text-xl font-semibold mb-3">Plain language</h3>
-            <p className="text-gray-600">Legal jargon translated into simple, understandable explanations anyone can follow.</p>
-          </div>
-          
-          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
-            <div className="text-gray-900 text-3xl mb-4">🔢</div>
-            <h3 className="text-xl font-semibold mb-3">Key numbers extracted</h3>
-            <p className="text-gray-600">Important dates, amounts, and durations automatically highlighted in a table.</p>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pricing Section */}
-      <section className="px-6 py-16 max-w-6xl mx-auto" id="pricing">
-        <h2 className="text-3xl font-bold text-center mb-12">Simple, transparent pricing</h2>
-        <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-          {/* One-time Plan */}
-          <div className="border-2 border-gray-200 p-8 rounded-lg">
-            <h3 className="text-xl font-semibold mb-2">One-time</h3>
-            <div className="text-4xl font-bold text-risk-red mb-2">€3</div>
-            <p className="text-gray-600 mb-6">5 analyses, one payment</p>
-            <ul className="text-gray-700 space-y-2 mb-8">
-              <li>✓ 5 contract analyses</li>
-              <li>✓ Full risk assessment</li>
-              <li>✓ PDF & text support</li>
-              <li>✓ No commitment</li>
-            </ul>
-            <Link
-              href="/checkout?plan=one-time"
-              className="block w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 text-center"
-            >
-              Choose Plan
-            </Link>
-          </div>
+        <section className="mx-auto max-w-wide px-5 py-16 sm:px-8 sm:py-20" id="pricing">
+          <h2 className="text-center mb-3">Simple pricing</h2>
+          <p className="text-center prose-body text-sm mb-12 max-w-md mx-auto">
+            {FREE_ANALYSES_PER_MONTH} free analyses every month. Upgrade when you
+            need more.
+          </p>
+          <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
+            <Card>
+              <h3 className="mb-1">One-time</h3>
+              <p className="text-3xl font-semibold text-ink mb-1">€3</p>
+              <p className="text-sm text-ink-muted mb-6">5 analyses, one payment</p>
+              <ul className="space-y-2 text-sm text-ink-secondary mb-8">
+                <li>5 contract analyses</li>
+                <li>Full risk assessment</li>
+                <li>PDF and text support</li>
+              </ul>
+              <LinkButton
+                href="/checkout?plan=one-time"
+                variant="secondary"
+                className="w-full"
+              >
+                Choose plan
+              </LinkButton>
+            </Card>
 
-          {/* Subscription Plan */}
-          <div className="border-2 border-risk-red p-8 rounded-lg bg-red-50">
-            <h3 className="text-xl font-semibold mb-2">Pro</h3>
-            <div className="text-4xl font-bold text-risk-red mb-2">€8<span className="text-lg">/mo</span></div>
-            <p className="text-gray-600 mb-6">Unlimited analyses</p>
-            <ul className="text-gray-700 space-y-2 mb-8">
-              <li>✓ Unlimited analyses</li>
-              <li>✓ Full risk assessment</li>
-              <li>✓ PDF & text support</li>
-              <li>✓ Cancel anytime</li>
-            </ul>
-            <Link
-              href="/checkout?plan=subscription"
-              className="block w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 text-center"
-            >
-              Subscribe Now
-            </Link>
+            <Card className="border-primary/30 ring-1 ring-primary/10">
+              <p className="text-xs font-medium text-primary mb-2">Recommended</p>
+              <h3 className="mb-1">Pro</h3>
+              <p className="text-3xl font-semibold text-ink mb-1">
+                €8<span className="text-base font-normal text-ink-muted">/mo</span>
+              </p>
+              <p className="text-sm text-ink-muted mb-6">Unlimited analyses</p>
+              <ul className="space-y-2 text-sm text-ink-secondary mb-8">
+                <li>Unlimited analyses</li>
+                <li>Full risk assessment</li>
+                <li>Cancel anytime</li>
+              </ul>
+              <LinkButton href="/checkout?plan=subscription" className="w-full">
+                Subscribe
+              </LinkButton>
+            </Card>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Footer CTA */}
-      <section className="px-6 py-16 bg-gray-900 text-white text-center">
-        <h2 className="text-3xl font-bold mb-4">Ready to understand your contracts?</h2>
-        <p className="text-gray-300 mb-8 text-lg">Start with {FREE_ANALYSES_PER_MONTH} free analyses every month.</p>
-        <Link 
-          href="/analyze" 
-          className="inline-block px-8 py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 transition"
-        >
-          Analyze Now
-        </Link>
-      </section>
+        <section className="border-t border-border">
+          <div className="mx-auto max-w-content px-5 py-14 sm:px-8 text-center">
+            <h2 className="mb-3 text-xl">Ready to review your contract?</h2>
+            <p className="prose-body text-sm mb-6">
+              Start with {FREE_ANALYSES_PER_MONTH} free analyses this month.
+            </p>
+            <LinkButton href="/analyze">Analyze now</LinkButton>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
