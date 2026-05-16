@@ -8,7 +8,6 @@ import {
   canAnalyze,
 } from '@/lib/entitlements';
 import { AppHeader } from '@/components/ui/AppHeader';
-import { AuthNav } from '@/components/auth/AuthNav';
 import { Card } from '@/components/ui/Card';
 import { LinkButton } from '@/components/ui/LinkButton';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
@@ -32,7 +31,7 @@ export default async function AccountPage() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-surface">
-        <AppHeader action={<AuthNav />} />
+        <AppHeader />
         <main className="mx-auto max-w-content px-5 py-12">
           <p className="text-risk-high">Could not load your profile.</p>
         </main>
@@ -45,7 +44,7 @@ export default async function AccountPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <AppHeader action={<AuthNav />} />
+      <AppHeader />
       <main className="mx-auto max-w-content px-5 py-10 sm:px-8 sm:py-14">
         <h1 className="mb-2">Account</h1>
         <p className="prose-body text-sm mb-8">

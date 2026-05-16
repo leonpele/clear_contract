@@ -7,7 +7,6 @@ import ResultsPanel from '@/components/ResultsPanel';
 import PaywallModal from '@/components/PaywallModal';
 import type { AnalysisResult } from '@/lib/analysisTypes';
 import { AppHeader } from '@/components/ui/AppHeader';
-import { AuthNav } from '@/components/auth/AuthNav';
 import { Button } from '@/components/ui/Button';
 import { Section, SectionDivider } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
@@ -115,15 +114,11 @@ export default function AnalyzePage() {
     <div className="min-h-screen bg-surface">
       <AppHeader
         action={
-          <div className="flex items-center gap-3">
-            {profileInfo && (
-              <span className="hidden sm:inline text-xs text-ink-muted">
-                {profileInfo.labels.plan} · {profileInfo.labels.remaining}{' '}
-                left
-              </span>
-            )}
-            <AuthNav />
-          </div>
+          profileInfo ? (
+            <span className="hidden sm:inline text-xs text-ink-muted">
+              {profileInfo.labels.plan} · {profileInfo.labels.remaining} left
+            </span>
+          ) : undefined
         }
       />
 

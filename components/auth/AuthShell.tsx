@@ -11,7 +11,7 @@ interface AuthShellProps {
 export function AuthShell({ title, subtitle, children }: AuthShellProps) {
   return (
     <div className="min-h-screen bg-surface">
-      <AppHeader />
+      <AppHeader showAuth={false} />
       <main className="mx-auto max-w-content px-5 py-12 sm:px-8 sm:py-16">
         <div className="mb-8">
           <h1 className="mb-2">{title}</h1>

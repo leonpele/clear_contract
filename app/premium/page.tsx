@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { AppHeader } from '@/components/ui/AppHeader';
-import { AuthNav } from '@/components/auth/AuthNav';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PRICING_PLANS } from '@/lib/stripe';
@@ -61,7 +60,7 @@ export default function PremiumPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <AppHeader action={<AuthNav />} />
+      <AppHeader />
       <main className="mx-auto max-w-wide px-5 py-10 sm:px-8 sm:py-14">
         <h1 className="mb-2">Upgrade</h1>
         <p className="prose-body text-sm mb-8 max-w-content">

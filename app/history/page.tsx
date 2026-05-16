@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { AppHeader } from '@/components/ui/AppHeader';
-import { AuthNav } from '@/components/auth/AuthNav';
 import { Card } from '@/components/ui/Card';
 import { LinkButton } from '@/components/ui/LinkButton';
 import type { ContractAnalysisRow } from '@/lib/types/profile';
@@ -31,7 +30,7 @@ export default async function HistoryPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <AppHeader action={<AuthNav />} />
+      <AppHeader />
       <main className="mx-auto max-w-wide px-5 py-10 sm:px-8 sm:py-14">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
