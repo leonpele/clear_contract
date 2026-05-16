@@ -6,7 +6,7 @@ const USAGE_KEY = 'cc_uses';
 const USAGE_MONTH_KEY = 'cc_usage_month';
 const PAID_KEY = 'cc_paid';
 
-/** Free analyses allowed each calendar month (local timezone). */
+/** @deprecated Use server profile + lib/entitlements. Kept for legacy localStorage. */
 export const FREE_ANALYSES_PER_MONTH = 3;
 
 function currentMonthKey(): string {

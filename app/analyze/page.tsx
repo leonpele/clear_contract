@@ -1,38 +1,51 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import UploadZone from '@/components/UploadZone';
 import ResultsPanel from '@/components/ResultsPanel';
 import PaywallModal from '@/components/PaywallModal';
-import {
-  parseUsage,
-  incrementUsage,
-  isPaidUser,
-  setPaidUser,
-  FREE_ANALYSES_PER_MONTH,
-} from '@/lib/parseUsage';
 import type { AnalysisResult } from '@/lib/analysisTypes';
 import { AppHeader } from '@/components/ui/AppHeader';
+import { AuthNav } from '@/components/auth/AuthNav';
 import { Button } from '@/components/ui/Button';
-import { LinkButton } from '@/components/ui/LinkButton';
 import { Section, SectionDivider } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
+import { createClient } from '@/lib/supabase/client';
+
+interface ProfileResponse {
+  canAnalyze: boolean;
+  remaining: number | 'unlimited';
+  labels: { plan: string; remaining: string };
+}
 
 export default function AnalyzePage() {
+  const router = useRouter();
   const [contractText, setContractText] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [usageCount, setUsageCount] = useState(0);
-  const [paid, setPaid] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [profileInfo, setProfileInfo] = useState<ProfileResponse | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const count = parseUsage();
-    setUsageCount(count);
-    setPaid(isPaidUser());
-  }, []);
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.replace('/login?redirect=/analyze');
+        return;
+      }
+      setAuthChecked(true);
+      fetch('/api/profile')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data) setProfileInfo(data);
+        })
+        .catch(() => {});
+    });
+  }, [router]);
 
   const handleAnalyze = async () => {
     if (!contractText.trim()) {
@@ -45,7 +58,7 @@ export default function AnalyzePage() {
       return;
     }
 
-    if (!paid && usageCount >= FREE_ANALYSES_PER_MONTH) {
+    if (profileInfo && !profileInfo.canAnalyze) {
       setShowPaywall(true);
       return;
     }
@@ -60,14 +73,29 @@ export default function AnalyzePage() {
         body: JSON.stringify({ text: contractText }),
       });
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        router.push('/login?redirect=/analyze');
+        return;
       }
 
-      const data = await response.json();
-      setResults(data);
-      incrementUsage();
-      setUsageCount((prev) => prev + 1);
+      if (response.status === 402) {
+        setShowPaywall(true);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || `API error: ${response.status}`);
+      }
+
+      setResults(data as AnalysisResult);
+
+      const profileRes = await fetch('/api/profile');
+      if (profileRes.ok) {
+        const updated = await profileRes.json();
+        setProfileInfo(updated);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
@@ -75,19 +103,27 @@ export default function AnalyzePage() {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    setPaidUser();
-    setPaid(true);
-    setShowPaywall(false);
-  };
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface">
       <AppHeader
         action={
-          <LinkButton href="/" variant="ghost" className="text-sm">
-            Home
-          </LinkButton>
+          <div className="flex items-center gap-3">
+            {profileInfo && (
+              <span className="hidden sm:inline text-xs text-ink-muted">
+                {profileInfo.labels.plan} · {profileInfo.labels.remaining}{' '}
+                left
+              </span>
+            )}
+            <AuthNav />
+          </div>
         }
       />
 
@@ -172,10 +208,7 @@ export default function AnalyzePage() {
       </main>
 
       {showPaywall && (
-        <PaywallModal
-          onClose={() => setShowPaywall(false)}
-          onPaymentSuccess={handlePaymentSuccess}
-        />
+        <PaywallModal onClose={() => setShowPaywall(false)} />
       )}
     </div>
   );

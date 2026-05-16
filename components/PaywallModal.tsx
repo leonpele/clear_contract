@@ -2,19 +2,16 @@
 
 import { useState } from 'react';
 import { PRICING_PLANS } from '@/lib/stripe';
-import { FREE_ANALYSES_PER_MONTH } from '@/lib/parseUsage';
+import { FREE_ANALYSES_PER_MONTH } from '@/lib/entitlements';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { LinkButton } from '@/components/ui/LinkButton';
 
 interface PaywallModalProps {
   onClose: () => void;
-  onPaymentSuccess: () => void;
 }
 
-export default function PaywallModal({
-  onClose,
-  onPaymentSuccess: _onPaymentSuccess,
-}: PaywallModalProps) {
+export default function PaywallModal({ onClose }: PaywallModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,6 +30,11 @@ export default function PaywallModal({
         url?: string;
         error?: string;
       };
+
+      if (response.status === 401) {
+        window.location.href = '/login?redirect=/analyze';
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(
@@ -66,7 +68,7 @@ export default function PaywallModal({
             <h2 className="text-xl">Continue analyzing</h2>
             <p className="prose-body text-sm mt-1">
               You&apos;ve used your {FREE_ANALYSES_PER_MONTH} free analyses this
-              month.
+              month, or your credits are exhausted.
             </p>
           </div>
           <button
@@ -126,7 +128,13 @@ export default function PaywallModal({
           </Card>
         </div>
 
-        <p className="text-xs text-ink-faint text-center mt-6">
+        <p className="text-xs text-ink-faint text-center mt-4">
+          <LinkButton href="/premium" variant="ghost" className="text-xs">
+            View upgrade page
+          </LinkButton>
+        </p>
+
+        <p className="text-xs text-ink-faint text-center mt-2">
           Payments secured by Stripe. We never store your card details.
         </p>
       </Card>

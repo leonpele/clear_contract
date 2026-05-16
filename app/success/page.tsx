@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { setPaidUser } from '@/lib/parseUsage';
 import { LinkButton } from '@/components/ui/LinkButton';
 import { Card } from '@/components/ui/Card';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
@@ -11,10 +10,8 @@ export default function SuccessPage() {
   const router = useRouter();
 
   useEffect(() => {
-    setPaidUser();
-
     const timer = setTimeout(() => {
-      router.push('/analyze');
+      router.push('/account');
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -28,14 +25,17 @@ export default function SuccessPage() {
         </div>
         <h1 className="text-xl mb-2">Payment successful</h1>
         <p className="prose-body text-sm mb-1">
-          Your account has been upgraded. You now have full access to
-          ContractClear.
+          Your account will update within a few seconds. Check your plan on the
+          account page.
         </p>
-        <LinkButton href="/analyze" className="mt-8 w-full">
-          Start analyzing
+        <LinkButton href="/account" className="mt-6 w-full">
+          View account
+        </LinkButton>
+        <LinkButton href="/analyze" variant="secondary" className="mt-3 w-full">
+          Analyze a contract
         </LinkButton>
         <p className="text-xs text-ink-faint mt-6">
-          Redirecting in 5 seconds…
+          Redirecting to account in 5 seconds…
         </p>
         <LegalDisclaimer className="mt-6 text-left" />
       </Card>

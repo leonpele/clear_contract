@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { createClient } from '@/lib/supabase/server';
 import {
   STRIPE_FALLBACK_PRICE_ONETIME,
   STRIPE_FALLBACK_PRICE_SUBSCRIPTION,
@@ -48,6 +49,18 @@ export async function POST(request: NextRequest) {
   const stripe = new Stripe(secretKey);
 
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Sign in required before checkout.' },
+        { status: 401 }
+      );
+    }
+
     const body = (await request.json()) as CheckoutRequest;
     const planType = body.planType;
 
@@ -84,8 +97,23 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: planType === 'subscription' ? 'subscription' : 'payment',
-      success_url: `${appUrl}/success`,
+      success_url: `${appUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/analyze`,
+      client_reference_id: user.id,
+      customer_email: user.email ?? undefined,
+      metadata: {
+        supabase_user_id: user.id,
+        plan_type: planType,
+      },
+      subscription_data:
+        planType === 'subscription'
+          ? {
+              metadata: {
+                supabase_user_id: user.id,
+                plan_type: 'subscription',
+              },
+            }
+          : undefined,
     });
 
     if (!session.url) {

@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  applyOneTimePurchase,
+  applyProSubscription,
+  deactivateProSubscription,
+} from '@/lib/profile/service';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
-
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+
+function getUserIdFromMetadata(
+  metadata: Stripe.Metadata | null | undefined
+): string | null {
+  return metadata?.supabase_user_id ?? null;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,29 +39,71 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle checkout.session.completed event
+    const admin = createAdminClient();
+
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log('Payment successful for session:', session.id);
-      // Here you would typically:
-      // 1. Find user by session metadata
-      // 2. Update user's subscription status in database
-      // 3. Send confirmation email
+      const userId =
+        getUserIdFromMetadata(session.metadata) ??
+        session.client_reference_id;
+
+      if (!userId) {
+        console.error('checkout.session.completed: no user id in metadata');
+      } else {
+        const planType = session.metadata?.plan_type;
+
+        if (session.mode === 'subscription' || planType === 'subscription') {
+          await applyProSubscription(
+            admin,
+            userId,
+            session.customer as string | null,
+            session.subscription as string | null
+          );
+        } else {
+          await applyOneTimePurchase(admin, userId);
+        }
+      }
     }
 
-    // Handle customer.subscription.updated event
     if (event.type === 'customer.subscription.updated') {
       const subscription = event.data.object as Stripe.Subscription;
-      console.log('Subscription updated:', subscription.id);
+      const userId = getUserIdFromMetadata(subscription.metadata);
+
+      if (userId) {
+        if (
+          subscription.status === 'active' ||
+          subscription.status === 'trialing'
+        ) {
+          await applyProSubscription(
+            admin,
+            userId,
+            subscription.customer as string,
+            subscription.id
+          );
+        } else if (
+          subscription.status === 'canceled' ||
+          subscription.status === 'unpaid' ||
+          subscription.status === 'past_due'
+        ) {
+          await admin
+            .from('profiles')
+            .update({
+              subscription_status:
+                subscription.status === 'past_due' ? 'past_due' : 'inactive',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', userId);
+        }
+      }
     }
 
-    // Handle customer.subscription.deleted event
     if (event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object as Stripe.Subscription;
-      console.log('Subscription deleted:', subscription.id);
-      // Here you would typically:
-      // 1. Find user by subscription metadata
-      // 2. Update user's subscription status to inactive
+      const userId = getUserIdFromMetadata(subscription.metadata);
+
+      if (userId) {
+        await deactivateProSubscription(admin, userId);
+      }
     }
 
     return NextResponse.json({ received: true });
