@@ -33,7 +33,12 @@ export default async function AccountPage() {
       <div className="min-h-screen bg-surface">
         <AppHeader />
         <main className="mx-auto max-w-content px-5 py-12">
-          <p className="text-risk-high">Could not load your profile.</p>
+          <p className="text-risk-high">
+            Could not load your profile. Run the SQL migration in Supabase
+            (see <code className="text-xs">supabase/migrations/001_profiles_and_analyses.sql</code>
+            ) and set <code className="text-xs">SUPABASE_SERVICE_ROLE_KEY</code> in
+            your environment, then sign out and sign in again.
+          </p>
         </main>
       </div>
     );

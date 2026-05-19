@@ -31,6 +31,26 @@ function resolvePriceId(planType: PlanType): string | null {
   );
 }
 
+/** Ensures one-time plan uses a non-recurring Stripe Price (and vice versa). */
+async function validatePriceForPlan(
+  stripe: Stripe,
+  priceId: string,
+  planType: PlanType
+): Promise<string | null> {
+  const price = await stripe.prices.retrieve(priceId);
+  const isRecurring = price.type === 'recurring' || Boolean(price.recurring);
+
+  if (planType === 'one-time' && isRecurring) {
+    return `STRIPE_PRICE_ONETIME is set to a recurring price (${priceId}). In Stripe Dashboard create a one-time price (Pricing → product → one-time), copy its price_… ID into STRIPE_PRICE_ONETIME in .env.local, then restart npm run dev. You may have swapped ONETIME and SUBSCRIPTION IDs.`;
+  }
+
+  if (planType === 'subscription' && !isRecurring) {
+    return `STRIPE_PRICE_SUBSCRIPTION is set to a one-time price (${priceId}). Use a recurring monthly price for Pro in STRIPE_PRICE_SUBSCRIPTION.`;
+  }
+
+  return null;
+}
+
 interface CheckoutRequest {
   planType: PlanType;
   /** @deprecated server resolves price from env; ignored if planType is set */
@@ -64,6 +84,10 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as CheckoutRequest;
     const planType = body.planType;
 
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[checkout]', { planType, userId: user.id });
+    }
+
     if (planType !== 'one-time' && planType !== 'subscription') {
       return NextResponse.json(
         { error: 'Invalid planType. Use "one-time" or "subscription".' },
@@ -82,6 +106,21 @@ export async function POST(request: NextRequest) {
           ? 'Missing STRIPE_PRICE_SUBSCRIPTION (or NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION), or set STRIPE_FALLBACK_PRICE_SUBSCRIPTION in lib/stripePriceIds.ts. Value must start with price_.'
           : 'Missing STRIPE_PRICE_ONETIME (or NEXT_PUBLIC_STRIPE_PRICE_ONETIME), or set STRIPE_FALLBACK_PRICE_ONETIME in lib/stripePriceIds.ts. Value must start with price_.';
       return NextResponse.json({ error: hint }, { status: 503 });
+    }
+
+    const priceMismatch = await validatePriceForPlan(stripe, priceId, planType);
+    if (priceMismatch) {
+      return NextResponse.json({ error: priceMismatch }, { status: 400 });
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      const price = await stripe.prices.retrieve(priceId);
+      console.log('[checkout] price', {
+        priceId,
+        type: price.type,
+        recurring: price.recurring?.interval ?? null,
+        mode: planType === 'subscription' ? 'subscription' : 'payment',
+      });
     }
 
     const appUrl = (
@@ -140,6 +179,12 @@ export async function POST(request: NextRequest) {
         message += `
 
 Likely cause: your secret key and this Price ID are not in the same Stripe mode. If STRIPE_SECRET_KEY starts with sk_test_, create/copy the price in Test mode (toggle in the Stripe Dashboard). If it starts with sk_live_, use a price created in Live mode.`;
+      }
+
+      if (/recurring price/i.test(message) || /one-time prices/i.test(message)) {
+        message += `
+
+Fix: In .env.local, STRIPE_PRICE_ONETIME must be a one-time price_… and STRIPE_PRICE_SUBSCRIPTION must be a recurring price_…. Check Stripe Dashboard → Products (Test mode).`;
       }
 
       return NextResponse.json({ error: message }, { status: 400 });

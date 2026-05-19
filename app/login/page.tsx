@@ -17,7 +17,10 @@ function LoginContent() {
     >
       {authError && (
         <p className="mb-4 text-sm text-risk-high" role="alert">
-          Sign-in failed. Please try again.
+          Sign-in failed after redirect. In Supabase → Authentication → URL
+          configuration, add your site URL and{' '}
+          <code className="text-xs">/auth/callback</code> to Redirect URLs, then
+          try again.
         </p>
       )}
       <AuthForm mode="login" redirectTo={redirectTo} />

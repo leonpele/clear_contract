@@ -17,6 +17,25 @@ interface AuthFormProps {
 const inputClass =
   'w-full rounded-lg border border-border bg-surface px-4 py-3 text-[15px] text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 
+function friendlyAuthError(message: string, mode: AuthMode): string {
+  const lower = message.toLowerCase();
+  if (lower.includes('already registered') || lower.includes('already been registered')) {
+    return mode === 'signup'
+      ? 'This email already has an account. Use Sign in instead.'
+      : message;
+  }
+  if (lower.includes('invalid login credentials')) {
+    return 'Wrong email or password. Try again or create an account.';
+  }
+  if (lower.includes('email not confirmed')) {
+    return 'Confirm your email first (check your inbox), then sign in.';
+  }
+  if (lower.includes('invalid api key') || lower.includes('fetch')) {
+    return 'Auth is misconfigured. Check Supabase URL and keys in Vercel / .env.local.';
+  }
+  return message;
+}
+
 export function AuthForm({ mode, redirectTo = '/analyze' }: AuthFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -34,7 +53,7 @@ export function AuthForm({ mode, redirectTo = '/analyze' }: AuthFormProps) {
     const supabase = createClient();
 
     if (mode === 'signup') {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -43,10 +62,14 @@ export function AuthForm({ mode, redirectTo = '/analyze' }: AuthFormProps) {
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        setError(friendlyAuthError(signUpError.message, mode));
+      } else if (data.session) {
+        await fetch('/api/profile').catch(() => {});
+        router.push(redirectTo);
+        router.refresh();
       } else {
         setMessage(
-          'Check your email to confirm your account, or sign in if confirmation is disabled.'
+          'Account created. Check your email to confirm, then sign in.'
         );
       }
     } else {
@@ -56,8 +79,9 @@ export function AuthForm({ mode, redirectTo = '/analyze' }: AuthFormProps) {
       });
 
       if (signInError) {
-        setError(signInError.message);
+        setError(friendlyAuthError(signInError.message, mode));
       } else {
+        await fetch('/api/profile').catch(() => {});
         router.push(redirectTo);
         router.refresh();
       }

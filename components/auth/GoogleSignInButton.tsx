@@ -25,7 +25,12 @@ export function GoogleSignInButton({ redirectTo = '/account' }: GoogleSignInButt
     });
 
     if (authError) {
-      setError(authError.message);
+      const msg = authError.message.toLowerCase();
+      setError(
+        msg.includes('provider') || msg.includes('enabled')
+          ? 'Google sign-in is not enabled in Supabase (Authentication → Providers → Google).'
+          : authError.message
+      );
       setLoading(false);
     }
   };

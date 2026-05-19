@@ -1,12 +1,17 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AnalysisResult } from '@/lib/analysisTypes';
 import type { Profile } from '@/lib/types/profile';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   ONE_TIME_ANALYSIS_CREDITS,
   FREE_ANALYSES_PER_MONTH,
   currentUsageMonth,
   effectiveAnalysesUsed,
 } from '@/lib/entitlements';
+
+function isUniqueViolation(error: { code?: string } | null): boolean {
+  return error?.code === '23505';
+}
 
 export async function getProfileByUserId(
   supabase: SupabaseClient,
@@ -26,14 +31,11 @@ export async function getProfileByUserId(
   return data as Profile | null;
 }
 
-export async function ensureProfile(
+async function insertProfile(
   supabase: SupabaseClient,
   userId: string,
   email: string | undefined
 ): Promise<Profile | null> {
-  const existing = await getProfileByUserId(supabase, userId);
-  if (existing) return existing;
-
   const month = currentUsageMonth();
   const { data, error } = await supabase
     .from('profiles')
@@ -48,12 +50,40 @@ export async function ensureProfile(
     .select('*')
     .single();
 
-  if (error) {
-    console.error('ensureProfile insert:', error);
-    return null;
+  if (!error && data) return data as Profile;
+
+  if (isUniqueViolation(error)) {
+    return getProfileByUserId(supabase, userId);
   }
 
-  return data as Profile;
+  if (error) console.error('ensureProfile insert:', error);
+  return null;
+}
+
+export async function ensureProfile(
+  supabase: SupabaseClient,
+  userId: string,
+  email: string | undefined
+): Promise<Profile | null> {
+  const existing = await getProfileByUserId(supabase, userId);
+  if (existing) return existing;
+
+  let profile = await insertProfile(supabase, userId, email);
+  if (profile) return profile;
+
+  try {
+    const admin = createAdminClient();
+    profile = await getProfileByUserId(admin, userId);
+    if (profile) return profile;
+
+    profile = await insertProfile(admin, userId, email);
+    if (profile) return profile;
+
+    return getProfileByUserId(admin, userId);
+  } catch (adminErr) {
+    console.error('ensureProfile admin fallback:', adminErr);
+    return null;
+  }
 }
 
 /** Reset free-tier counter when calendar month changes. */
