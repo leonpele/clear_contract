@@ -5,6 +5,8 @@ import { AppHeader } from '@/components/ui/AppHeader';
 import { Card } from '@/components/ui/Card';
 import { LinkButton } from '@/components/ui/LinkButton';
 import type { ContractAnalysisRow } from '@/lib/types/profile';
+import { PageBackground } from '@/components/ui/PageBackground';
+import { FadeIn } from '@/components/ui/FadeIn';
 
 export default async function HistoryPage() {
   const supabase = await createClient();
@@ -29,9 +31,11 @@ export default async function HistoryPage() {
   >[];
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="relative min-h-screen">
+      <PageBackground variant="analyze" />
       <AppHeader />
       <main className="mx-auto max-w-wide px-5 py-10 sm:px-8 sm:py-14">
+        <FadeIn>
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="mb-2">Analysis history</h1>
@@ -43,6 +47,7 @@ export default async function HistoryPage() {
             New analysis
           </LinkButton>
         </div>
+        </FadeIn>
 
         {error && (
           <p className="text-risk-high text-sm mb-4">
@@ -61,7 +66,7 @@ export default async function HistoryPage() {
           <ul className="space-y-3">
             {analyses.map((row) => (
               <li key={row.id}>
-                <Card className="shadow-none">
+                <Card interactive className="shadow-none">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-ink-muted mb-1">

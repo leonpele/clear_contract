@@ -8,10 +8,13 @@ import {
   canAnalyze,
 } from '@/lib/entitlements';
 import { AppHeader } from '@/components/ui/AppHeader';
+import { Footer } from '@/components/ui/Footer';
 import { Card } from '@/components/ui/Card';
 import { LinkButton } from '@/components/ui/LinkButton';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 import { LogoutButton } from '@/components/auth/LogoutButton';
+import { PageBackground } from '@/components/ui/PageBackground';
+import { FadeIn } from '@/components/ui/FadeIn';
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -48,15 +51,19 @@ export default async function AccountPage() {
     profile.purchase_type === 'one-time' ? 'One-time' : '—';
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="relative min-h-screen">
+      <PageBackground />
       <AppHeader />
       <main className="mx-auto max-w-content px-5 py-10 sm:px-8 sm:py-14">
+        <FadeIn>
         <h1 className="mb-2">Account</h1>
         <p className="prose-body text-sm mb-8">
           Your plan, usage, and subscription details.
         </p>
+        </FadeIn>
 
-        <Card className="space-y-6">
+        <FadeIn delay={80}>
+        <Card className="space-y-6 shadow-card-hover">
           <dl className="grid gap-4 sm:grid-cols-2">
             <div>
               <dt className="label-caps text-ink-muted">Email</dt>
@@ -107,9 +114,12 @@ export default async function AccountPage() {
             <LogoutButton />
           </div>
         </Card>
+        </FadeIn>
 
         <LegalDisclaimer className="mt-8" />
       </main>
+
+      <Footer />
     </div>
   );
 }

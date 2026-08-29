@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PRICING_PLANS } from '@/lib/stripe';
 import { FREE_ANALYSES_PER_MONTH } from '@/lib/entitlements';
 import { Button } from '@/components/ui/Button';
@@ -14,6 +14,12 @@ interface PaywallModalProps {
 export default function PaywallModal({ onClose }: PaywallModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
 
   const handleCheckout = async (planType: 'one-time' | 'subscription') => {
     setLoading(true);
@@ -58,11 +64,21 @@ export default function PaywallModal({ onClose }: PaywallModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-[2px]"
+      className={[
+        'fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300',
+        visible ? 'bg-ink/50 backdrop-blur-sm' : 'bg-transparent',
+      ].join(' ')}
       role="dialog"
       aria-modal="true"
+      onClick={onClose}
     >
-      <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-card">
+      <Card
+        className={[
+          'max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-card-hover transition-all duration-300',
+          visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
+        ].join(' ')}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h2 className="text-xl">Continue analyzing</h2>
@@ -74,7 +90,7 @@ export default function PaywallModal({ onClose }: PaywallModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="text-ink-muted hover:text-ink text-xl leading-none p-1 transition-colors duration-200"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted hover:bg-surface-subtle hover:text-ink transition-colors duration-200"
             aria-label="Close"
           >
             ×
@@ -82,13 +98,13 @@ export default function PaywallModal({ onClose }: PaywallModalProps) {
         </div>
 
         {error && (
-          <p className="mb-6 rounded-lg border border-risk-high-border bg-risk-high-bg px-4 py-3 text-sm text-risk-high whitespace-pre-wrap">
+          <p className="mb-6 rounded-lg border border-risk-high-border bg-risk-high-bg px-4 py-3 text-sm text-risk-high whitespace-pre-wrap animate-fade-in">
             {error}
           </p>
         )}
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Card muted className="shadow-none flex flex-col">
+          <Card muted interactive className="shadow-none flex flex-col">
             <h3 className="mb-1">One-time</h3>
             <p className="text-2xl font-semibold text-ink mb-4">
               €{PRICING_PLANS.oneTime.price}
@@ -107,7 +123,10 @@ export default function PaywallModal({ onClose }: PaywallModalProps) {
             </Button>
           </Card>
 
-          <Card className="shadow-none flex flex-col border-primary/20 ring-1 ring-primary/10">
+          <Card
+            interactive
+            className="shadow-none flex flex-col border-primary/20 ring-1 ring-primary/10"
+          >
             <p className="text-xs font-medium text-primary mb-2">Recommended</p>
             <h3 className="mb-1">Pro</h3>
             <p className="text-2xl font-semibold text-ink mb-1">

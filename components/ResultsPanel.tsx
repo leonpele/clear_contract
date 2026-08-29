@@ -29,13 +29,18 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
 
   return (
     <div className="space-y-8">
-      <Section title="Risk score" subtitle="Overall assessment based on detected terms.">
+      <Section
+        title="Risk score"
+        subtitle="Overall assessment based on detected terms."
+        animate
+      >
         <RiskScoreDisplay key={scoreKey} score={results.risk_score} />
       </Section>
 
       <Section
         className={RESULT_SECTION_LEAD}
         title="Simplified summary"
+        animate
         subtitle="Plain-language overview of what this agreement covers."
       >
         <Card muted>
@@ -47,6 +52,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
         className={RESULT_SECTION_LEAD}
         title="Highlighted clauses"
         subtitle="Passages from your contract linked to explanations. Select text to jump to details."
+        animate
       >
         <ContractHighlightSection contractText={contractText} results={results} />
       </Section>
@@ -57,6 +63,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
             className={RESULT_SECTION_LEAD}
             title="Recommendations"
             subtitle="Practical next steps before you sign or negotiate."
+            animate
           >
             <Card>
               <ul className="space-y-3">
@@ -81,6 +88,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
             className={RESULT_SECTION_LEAD}
             title="Key numbers"
             subtitle="Dates, amounts, and durations extracted."
+            animate
           >
             <Card className="overflow-hidden p-0">
               <div className="overflow-x-auto">

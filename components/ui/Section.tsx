@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { FadeIn } from './FadeIn';
 
 interface SectionProps {
   title: string;
@@ -6,10 +7,18 @@ interface SectionProps {
   children: ReactNode;
   id?: string;
   className?: string;
+  animate?: boolean;
 }
 
-export function Section({ title, subtitle, children, id, className }: SectionProps) {
-  return (
+export function Section({
+  title,
+  subtitle,
+  children,
+  id,
+  className,
+  animate = false,
+}: SectionProps) {
+  const content = (
     <section id={id} className={['space-y-5', className].filter(Boolean).join(' ')}>
       <header className="space-y-2">
         <h2>{title}</h2>
@@ -18,10 +27,15 @@ export function Section({ title, subtitle, children, id, className }: SectionPro
       {children}
     </section>
   );
+
+  if (animate) {
+    return <FadeIn>{content}</FadeIn>;
+  }
+
+  return content;
 }
 
 interface SectionDividerProps {
-  /** Extra vertical space between result sections (summary, highlights, etc.) */
   spacious?: boolean;
 }
 
@@ -30,8 +44,8 @@ export function SectionDivider({ spacious = false }: SectionDividerProps) {
     <hr
       className={
         spacious
-          ? 'border-0 border-t border-border my-28 sm:my-36'
-          : 'border-0 border-t border-border my-16 sm:my-20'
+          ? 'border-0 border-t border-border/80 my-28 sm:my-36'
+          : 'border-0 border-t border-border/80 my-16 sm:my-20'
       }
       aria-hidden
     />

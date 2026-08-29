@@ -28,6 +28,10 @@
   h3 {
     @apply text-base font-semibold text-ink leading-snug;
   }
+
+  ::selection {
+    @apply bg-primary/20 text-ink;
+  }
 }
 
 @layer components {
@@ -37,5 +41,46 @@
 
   .label-caps {
     @apply text-xs font-medium uppercase tracking-wider text-ink-muted;
+  }
+
+  .btn-interactive {
+    @apply transition-all duration-200 ease-out
+      active:scale-[0.98]
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2;
+  }
+
+  .card-interactive {
+    @apply transition-all duration-300 ease-out
+      hover:-translate-y-0.5 hover:shadow-card-hover hover:border-border-strong;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-border bg-surface px-4 py-3 text-[15px] text-ink
+      transition-all duration-200
+      placeholder:text-ink-faint
+      hover:border-border-strong
+      focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20;
+  }
+
+  .nav-link {
+    @apply relative text-sm font-medium text-ink-muted transition-colors duration-200
+      hover:text-ink
+      after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-primary
+      after:transition-all after:duration-300 hover:after:w-full;
+  }
+
+  .hero-gradient-text {
+    @apply bg-gradient-to-r from-ink via-ink to-primary bg-clip-text text-transparent;
+  }
+
+  .skeleton-shimmer {
+    @apply animate-shimmer bg-gradient-to-r from-surface-subtle via-surface-muted to-surface-subtle bg-[length:200%_100%];
+  }
+}
+
+@layer utilities {
+  .animate-hero {
+    @apply animate-fade-up opacity-0;
+    animation-fill-mode: forwards;
   }
 }

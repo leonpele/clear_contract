@@ -1,7 +1,16 @@
-export function LegalDisclaimer({ className = '' }: { className?: string }) {
+import type { CSSProperties } from 'react';
+
+export function LegalDisclaimer({
+  className = '',
+  style,
+}: {
+  className?: string;
+  style?: CSSProperties;
+}) {
   return (
     <p
       className={`text-xs text-ink-faint leading-relaxed ${className}`}
+      style={style}
       role="note"
     >
       AI-generated analysis. Not legal advice. Review important terms with a

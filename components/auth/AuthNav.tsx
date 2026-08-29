@@ -34,7 +34,9 @@ export function AuthNav() {
   };
 
   if (loading) {
-    return <span className="text-sm text-ink-muted">…</span>;
+    return (
+      <span className="inline-block h-4 w-16 rounded skeleton-shimmer" aria-hidden />
+    );
   }
 
   if (!email) {
@@ -54,7 +56,7 @@ export function AuthNav() {
     <div className="flex items-center gap-2 sm:gap-3">
       <Link
         href="/account"
-        className="hidden sm:inline text-sm text-ink-muted hover:text-ink truncate max-w-[160px]"
+        className="nav-link hidden sm:inline truncate max-w-[160px]"
       >
         {email}
       </Link>

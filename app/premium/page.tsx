@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PRICING_PLANS } from '@/lib/stripe';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
+import { PageBackground } from '@/components/ui/PageBackground';
+import { FadeIn } from '@/components/ui/FadeIn';
 import type { Profile } from '@/lib/types/profile';
 
 export default function PremiumPage() {
@@ -59,9 +61,11 @@ export default function PremiumPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="relative min-h-screen">
+      <PageBackground />
       <AppHeader />
       <main className="mx-auto max-w-wide px-5 py-10 sm:px-8 sm:py-14">
+        <FadeIn>
         <h1 className="mb-2">Upgrade</h1>
         <p className="prose-body text-sm mb-8 max-w-content">
           Choose the same plans as before — One-time credits or Pro unlimited.
@@ -82,8 +86,10 @@ export default function PremiumPage() {
           </p>
         )}
 
+        </FadeIn>
         <div className="grid gap-4 md:grid-cols-2 max-w-2xl">
-          <Card muted className="shadow-none flex flex-col">
+          <FadeIn delay={0}>
+          <Card muted interactive className="shadow-none flex flex-col">
             <h2 className="text-lg mb-1">One-time</h2>
             <p className="text-2xl font-semibold mb-4">
               €{PRICING_PLANS.oneTime.price}
@@ -101,8 +107,10 @@ export default function PremiumPage() {
               Buy credits
             </Button>
           </Card>
+          </FadeIn>
 
-          <Card className="shadow-none flex flex-col border-primary/20 ring-1 ring-primary/10">
+          <FadeIn delay={100}>
+          <Card interactive className="shadow-none flex flex-col border-primary/20 ring-1 ring-primary/10 shadow-glow">
             <p className="text-xs font-medium text-primary mb-2">Recommended</p>
             <h2 className="text-lg mb-1">Pro</h2>
             <p className="text-2xl font-semibold mb-1">
@@ -121,6 +129,7 @@ export default function PremiumPage() {
               Subscribe
             </Button>
           </Card>
+          </FadeIn>
         </div>
 
         <LegalDisclaimer className="mt-8" />

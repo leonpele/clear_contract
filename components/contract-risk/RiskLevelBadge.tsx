@@ -10,7 +10,7 @@ const label: Record<RiskLevel, string> = {
 export function RiskLevelBadge({ level }: { level: RiskLevel }) {
   return (
     <span
-      className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${riskLevelStyles[level].badge}`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-transform duration-200 hover:scale-105 ${riskLevelStyles[level].badge}`}
     >
       {label[level]}
     </span>

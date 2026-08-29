@@ -5,9 +5,9 @@ type Variant = 'primary' | 'secondary' | 'ghost';
 
 const variants: Record<Variant, string> = {
   primary:
-    'bg-primary text-white hover:bg-primary-hover border border-transparent shadow-sm',
+    'bg-primary text-white hover:bg-primary-hover border border-transparent shadow-sm hover:shadow-glow',
   secondary:
-    'bg-surface text-ink border border-border hover:bg-surface-muted hover:border-border-strong',
+    'bg-surface text-ink border border-border hover:bg-surface-muted hover:border-border-strong hover:shadow-card',
   ghost:
     'bg-transparent text-ink-secondary border border-transparent hover:bg-surface-subtle hover:text-ink',
 };
@@ -25,8 +25,7 @@ export function LinkButton({
   return (
     <Link
       className={[
-        'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium',
-        'transition-colors duration-200 ease-out',
+        'btn-interactive inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium',
         variants[variant],
         className,
       ]

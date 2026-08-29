@@ -24,8 +24,11 @@ export default function PricingCard({
 }: PricingCardProps) {
   return (
     <Card
+      interactive
       className={
-        highlighted ? 'border-primary/30 ring-1 ring-primary/10' : 'shadow-none'
+        highlighted
+          ? 'border-primary/30 ring-1 ring-primary/15 shadow-glow'
+          : ''
       }
     >
       {highlighted && (
@@ -41,7 +44,10 @@ export default function PricingCard({
       <p className="text-sm text-ink-muted mb-6">{description}</p>
       <ul className="space-y-2 text-sm text-ink-secondary mb-8">
         {features.map((feature) => (
-          <li key={feature}>{feature}</li>
+          <li key={feature} className="flex items-center gap-2">
+            <span className="text-primary">✓</span>
+            {feature}
+          </li>
         ))}
       </ul>
       <LinkButton

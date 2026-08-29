@@ -14,8 +14,7 @@ interface AuthFormProps {
   redirectTo?: string;
 }
 
-const inputClass =
-  'w-full rounded-lg border border-border bg-surface px-4 py-3 text-[15px] text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
+const inputClass = 'input-field';
 
 function friendlyAuthError(message: string, mode: AuthMode): string {
   const lower = message.toLowerCase();
