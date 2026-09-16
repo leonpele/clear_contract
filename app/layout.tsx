@@ -1,14 +1,20 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
+import './globals.css';
 
-const inter = Inter({ subsets: ["latin"] });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: "ContractClear",
-  description: "AI-powered contract analyzer — understand any contract in 30 seconds",
+  title: 'ContractClear',
+  description:
+    'AI-powered contract analyzer — understand any contract in 30 seconds',
   icons: {
-    icon: [{ url: "/graphql-16-svgrepo-com.svg", type: "image/svg+xml" }],
+    icon: [{ url: '/graphql-16-svgrepo-com.svg', type: 'image/svg+xml' }],
   },
 };
 
@@ -18,8 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={jakarta.variable}>
+      <body className={`${jakarta.className} antialiased`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

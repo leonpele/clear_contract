@@ -1,53 +1,62 @@
-'use client';
+import { LinkButton } from '@/components/ui/LinkButton';
+import { Card } from '@/components/ui/Card';
 
 interface PricingCardProps {
   name: string;
   price: number;
+  period?: string;
   description: string;
   features: string[];
-  cta: string;
   highlighted?: boolean;
-  onCtaClick: () => void;
+  checkoutHref: string;
+  ctaLabel: string;
 }
 
 export default function PricingCard({
   name,
   price,
+  period,
   description,
   features,
-  cta,
-  highlighted = false,
-  onCtaClick,
+  highlighted,
+  checkoutHref,
+  ctaLabel,
 }: PricingCardProps) {
   return (
-    <div
-      className={`rounded-lg p-8 ${
+    <Card
+      interactive
+      className={
         highlighted
-          ? 'border-2 border-risk-red bg-red-50'
-          : 'border border-gray-200 bg-white'
-      }`}
+          ? 'border-primary/30 ring-1 ring-primary/15 shadow-glow'
+          : ''
+      }
     >
-      <h3 className="text-xl font-semibold mb-2 text-gray-900">{name}</h3>
-      <div className="text-4xl font-bold text-risk-red mb-2">
+      {highlighted && (
+        <p className="text-xs font-medium text-primary mb-2">Recommended</p>
+      )}
+      <h3 className="mb-1">{name}</h3>
+      <p className="text-3xl font-semibold text-ink mb-1">
         €{price}
-        {name.toLowerCase() === 'pro' && <span className="text-lg">/mo</span>}
-      </div>
-      <p className="text-gray-600 mb-6">{description}</p>
-
-      <ul className="space-y-2 mb-8">
-        {features.map((feature, idx) => (
-          <li key={idx} className="text-gray-700 text-sm">
-            ✓ {feature}
+        {period && (
+          <span className="text-base font-normal text-ink-muted">{period}</span>
+        )}
+      </p>
+      <p className="text-sm text-ink-muted mb-6">{description}</p>
+      <ul className="space-y-2 text-sm text-ink-secondary mb-8">
+        {features.map((feature) => (
+          <li key={feature} className="flex items-center gap-2">
+            <span className="text-primary">✓</span>
+            {feature}
           </li>
         ))}
       </ul>
-
-      <button
-        onClick={onCtaClick}
-        className="w-full py-3 bg-risk-red text-white font-semibold rounded-lg hover:bg-red-700 transition"
+      <LinkButton
+        href={checkoutHref}
+        variant={highlighted ? 'primary' : 'secondary'}
+        className="w-full"
       >
-        {cta}
-      </button>
-    </div>
+        {ctaLabel}
+      </LinkButton>
+    </Card>
   );
 }

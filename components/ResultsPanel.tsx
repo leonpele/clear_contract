@@ -1,116 +1,141 @@
 'use client';
 
+import type { AnalysisResult } from '@/lib/analysisTypes';
+import { RiskScoreDisplay } from '@/components/contract-risk/RiskScoreDisplay';
+import { ContractHighlightSection } from '@/components/contract-highlight/ContractHighlightSection';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
+
 const FEEDBACK_FORM_URL = 'https://tally.so/r/zx2kR0';
 
-interface AnalysisResult {
-  summary: string;
-  risky_clauses: Array<{ quote: string; explanation: string }>;
-  favorable_clauses: Array<{ quote: string; explanation: string }>;
-  key_numbers: Array<{ label: string; value: string }>;
-}
+/** Guaranteed gap above section (padding does not collapse like hr margins). */
+const RESULT_SECTION_LEAD = 'pt-10 sm:pt-14 border-t border-border';
 
 interface ResultsPanelProps {
   results: AnalysisResult;
+  contractText: string;
 }
 
-export default function ResultsPanel({ results }: ResultsPanelProps) {
+export default function ResultsPanel({ results, contractText }: ResultsPanelProps) {
+  const scoreKey = `${results.risk_score.percentage}-${results.risk_score.level}-${results.risk_score.explanation.slice(0, 120)}`;
+
+  const recommendations = [
+    ...results.risky_clauses.slice(0, 4).map((c) => c.explanation),
+    ...(results.risk_score.level === 'high'
+      ? [results.risk_score.explanation]
+      : []),
+  ].slice(0, 5);
+
   return (
-    <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-      {/* Summary */}
-      <div className="bg-gray-100 border-l-4 border-gray-400 p-4 rounded-lg">
-        <h3 className="font-semibold text-gray-900 mb-2">Summary</h3>
-        <p className="text-gray-700 text-sm leading-relaxed">{results.summary}</p>
-      </div>
+    <div className="space-y-8">
+      <Section
+        title="Risk score"
+        subtitle="Overall assessment based on detected terms."
+        animate
+      >
+        <RiskScoreDisplay key={scoreKey} score={results.risk_score} />
+      </Section>
 
-      {/* Risky Clauses */}
-      {results.risky_clauses.length > 0 && (
-        <div>
-          <h3 className="font-semibold text-risk-red mb-3 flex items-center gap-2">
-            ⚠️ Risky Clauses ({results.risky_clauses.length})
-          </h3>
-          <div className="space-y-3">
-            {results.risky_clauses.map((clause, idx) => (
-              <div
-                key={idx}
-                className="border-l-4 border-risk-red bg-red-50 p-4 rounded-lg"
-              >
-                <p className="text-sm text-gray-600 italic mb-2 border-l-2 border-red-200 pl-2">
-                  "{clause.quote}"
-                </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Why it's risky:</strong> {clause.explanation}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <Section
+        className={RESULT_SECTION_LEAD}
+        title="Simplified summary"
+        animate
+        subtitle="Plain-language overview of what this agreement covers."
+      >
+        <Card muted>
+          <p className="prose-body">{results.summary}</p>
+        </Card>
+      </Section>
 
-      {/* Favorable Clauses */}
-      {results.favorable_clauses.length > 0 && (
-        <div>
-          <h3 className="font-semibold text-safe-green mb-3 flex items-center gap-2">
-            ✓ Favorable Clauses ({results.favorable_clauses.length})
-          </h3>
-          <div className="space-y-3">
-            {results.favorable_clauses.map((clause, idx) => (
-              <div
-                key={idx}
-                className="border-l-4 border-safe-green bg-green-50 p-4 rounded-lg"
-              >
-                <p className="text-sm text-gray-600 italic mb-2 border-l-2 border-green-200 pl-2">
-                  "{clause.quote}"
-                </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Why it's good:</strong> {clause.explanation}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <Section
+        className={RESULT_SECTION_LEAD}
+        title="Highlighted clauses"
+        subtitle="Passages from your contract linked to explanations. Select text to jump to details."
+        animate
+      >
+        <ContractHighlightSection contractText={contractText} results={results} />
+      </Section>
 
-      {/* Key Numbers */}
-      {results.key_numbers.length > 0 && (
-        <div>
-          <h3 className="font-semibold text-gray-900 mb-3">🔢 Key Numbers</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b-2 border-gray-300">
-                  <th className="text-left p-2 text-gray-700 font-semibold">Label</th>
-                  <th className="text-left p-2 text-gray-700 font-semibold">Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.key_numbers.map((item, idx) => (
-                  <tr
+      {recommendations.length > 0 && (
+        <>
+          <Section
+            className={RESULT_SECTION_LEAD}
+            title="Recommendations"
+            subtitle="Practical next steps before you sign or negotiate."
+            animate
+          >
+            <Card>
+              <ul className="space-y-3">
+                {recommendations.map((item, idx) => (
+                  <li
                     key={idx}
-                    className="border-b border-gray-200 hover:bg-gray-50"
+                    className="flex gap-3 text-sm leading-relaxed text-ink-secondary"
                   >
-                    <td className="p-2 text-gray-600">{item.label}</td>
-                    <td className="p-2 text-gray-900 font-medium">{item.value}</td>
-                  </tr>
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                    {item}
+                  </li>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              </ul>
+            </Card>
+          </Section>
+        </>
       )}
 
-      <div className="pt-2 border-t border-gray-200">
-        <p className="text-sm text-gray-600 mb-3">
-          How was your experience? We read every response.
+      {results.key_numbers.length > 0 && (
+        <>
+          <Section
+            className={RESULT_SECTION_LEAD}
+            title="Key numbers"
+            subtitle="Dates, amounts, and durations extracted."
+            animate
+          >
+            <Card className="overflow-hidden p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[280px] text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-surface-muted">
+                      <th className="text-left px-4 py-3 font-medium text-ink-secondary">
+                        Label
+                      </th>
+                      <th className="text-left px-4 py-3 font-medium text-ink-secondary">
+                        Value
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.key_numbers.map((item, idx) => (
+                      <tr
+                        key={idx}
+                        className="border-b border-border last:border-0"
+                      >
+                        <td className="px-4 py-3 text-ink-muted">{item.label}</td>
+                        <td className="px-4 py-3 font-medium text-ink">
+                          {item.value}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </Section>
+        </>
+      )}
+
+      <div className={`${RESULT_SECTION_LEAD} space-y-4`}>
+        <LegalDisclaimer />
+        <p className="text-sm text-ink-muted">
+          How was your experience?{' '}
+          <a
+            href={FEEDBACK_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:text-primary-hover underline underline-offset-2 transition-colors duration-200"
+          >
+            Share feedback
+          </a>
         </p>
-        <a
-          href={FEEDBACK_FORM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-gray-300 text-gray-800 font-medium text-sm hover:border-risk-red hover:text-risk-red hover:bg-red-50 transition"
-        >
-          <span aria-hidden>💬</span>
-          Give us your feedback
-        </a>
       </div>
     </div>
   );
