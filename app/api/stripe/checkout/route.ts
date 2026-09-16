@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { track } from '@/lib/analytics/track';
 import {
   STRIPE_FALLBACK_PRICE_ONETIME,
   STRIPE_FALLBACK_PRICE_SUBSCRIPTION,
@@ -161,6 +163,8 @@ export async function POST(request: NextRequest) {
         { status: 502 }
       );
     }
+
+    await track(createAdminClient(), user.id, 'checkout', { planType });
 
     return NextResponse.json({
       sessionId: session.id,
