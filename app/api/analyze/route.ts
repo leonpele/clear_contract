@@ -4,6 +4,7 @@ import type { AnalysisResult } from '@/lib/analysisTypes';
 import { normalizeAnalysisResponse } from '@/lib/normalizeAnalysisResponse';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { track, trackFirstDocumentUploaded } from '@/lib/analytics/track';
 import {
   canAnalyze,
   effectiveAnalysesUsed,
@@ -12,7 +13,6 @@ import {
 } from '@/lib/entitlements';
 import {
   ensureProfile,
-  getProfileByUserId,
   incrementAnalysisUsage,
   saveAnalysisHistory,
 } from '@/lib/profile/service';
@@ -79,10 +79,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let profile = await getProfileByUserId(supabase, user.id);
-    if (!profile) {
-      profile = await ensureProfile(supabase, user.id, user.email);
-    }
+    let profile = await ensureProfile(supabase, user.id, user.email);
 
     if (!profile) {
       return NextResponse.json(
@@ -149,6 +146,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const admin = createAdminClient();
+    await trackFirstDocumentUploaded(admin, user.id);
+
     const message = await openai.chat.completions.create({
       model: 'gpt-4-turbo',
       max_tokens: 2200,
@@ -174,9 +174,11 @@ export async function POST(request: NextRequest) {
 
     const analysis: AnalysisResult = normalizeAnalysisResponse(parsed);
 
-    const admin = createAdminClient();
     await incrementAnalysisUsage(admin, activeProfile);
     await saveAnalysisHistory(admin, user.id, text, analysis);
+    await track(admin, user.id, 'analysis_completed', {
+      risk_score: analysis.risk_score.percentage,
+    });
 
     return NextResponse.json(analysis);
   } catch (error) {

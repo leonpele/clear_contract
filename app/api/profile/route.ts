@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { ensureProfile, getProfileByUserId } from '@/lib/profile/service';
+import { ensureProfile } from '@/lib/profile/service';
 import {
   canAnalyze,
   getRemainingAnalyses,
@@ -19,10 +19,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let profile = await getProfileByUserId(supabase, user.id);
-  if (!profile) {
-    profile = await ensureProfile(supabase, user.id, user.email);
-  }
+  const profile = await ensureProfile(supabase, user.id, user.email);
 
   if (!profile) {
     return NextResponse.json(
