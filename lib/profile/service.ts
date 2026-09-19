@@ -2,11 +2,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AnalysisResult } from '@/lib/analysisTypes';
 import type { Profile } from '@/lib/types/profile';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { track, trackSignupIfNew } from '@/lib/analytics/track';
 import {
   ONE_TIME_ANALYSIS_CREDITS,
   FREE_ANALYSES_PER_MONTH,
   currentUsageMonth,
   effectiveAnalysesUsed,
+  isProActive,
 } from '@/lib/entitlements';
 
 function isUniqueViolation(error: { code?: string } | null): boolean {
@@ -66,20 +68,34 @@ export async function ensureProfile(
   email: string | undefined
 ): Promise<Profile | null> {
   const existing = await getProfileByUserId(supabase, userId);
-  if (existing) return existing;
+  if (existing) {
+    await trackSignupIfNew(createAdminClient(), existing);
+    return existing;
+  }
 
   let profile = await insertProfile(supabase, userId, email);
-  if (profile) return profile;
+  if (profile) {
+    await trackSignupIfNew(createAdminClient(), profile);
+    return profile;
+  }
 
   try {
     const admin = createAdminClient();
     profile = await getProfileByUserId(admin, userId);
-    if (profile) return profile;
+    if (profile) {
+      await trackSignupIfNew(admin, profile);
+      return profile;
+    }
 
     profile = await insertProfile(admin, userId, email);
-    if (profile) return profile;
+    if (profile) {
+      await trackSignupIfNew(admin, profile);
+      return profile;
+    }
 
-    return getProfileByUserId(admin, userId);
+    profile = await getProfileByUserId(admin, userId);
+    if (profile) await trackSignupIfNew(admin, profile);
+    return profile;
   } catch (adminErr) {
     console.error('ensureProfile admin fallback:', adminErr);
     return null;
@@ -179,6 +195,9 @@ export async function applyProSubscription(
   stripeCustomerId?: string | null,
   stripeSubscriptionId?: string | null
 ): Promise<void> {
+  const before = await getProfileByUserId(admin, userId);
+  const wasActive = before ? isProActive(before) : false;
+
   const { error } = await admin
     .from('profiles')
     .update({
@@ -191,7 +210,18 @@ export async function applyProSubscription(
     })
     .eq('id', userId);
 
-  if (error) console.error('applyProSubscription:', error);
+  if (error) {
+    console.error('applyProSubscription:', error);
+    return;
+  }
+
+  // Only fire on the transition into an active subscription, not on every
+  // renewal webhook that pings us while status stays "active".
+  if (!wasActive) {
+    await track(admin, userId, 'subscription_active', {
+      stripe_customer_id: stripeCustomerId ?? null,
+    });
+  }
 }
 
 export async function deactivateProSubscription(

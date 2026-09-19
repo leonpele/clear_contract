@@ -6,6 +6,7 @@ import {
   getProfileByUserId,
   syncUsageMonth,
 } from '@/lib/profile/service';
+import { isAdminEmail } from '@/lib/admin';
 import {
   formatPlanLabel,
   formatStatusLabel,
@@ -127,6 +128,11 @@ export default async function AccountPage() {
             <LinkButton href="/history" variant="ghost">
               History
             </LinkButton>
+            {isAdminEmail(user.email) && (
+              <LinkButton href="/admin" variant="ghost">
+                Dashboard
+              </LinkButton>
+            )}
             <LogoutButton />
           </div>
         </Card>

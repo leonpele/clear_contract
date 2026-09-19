@@ -26,10 +26,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let profile = await getProfileByUserId(supabase, user.id);
-  if (!profile) {
-    profile = await ensureProfile(supabase, user.id, user.email);
-  }
+  let profile = await ensureProfile(supabase, user.id, user.email);
 
   if (!profile) {
     return NextResponse.json(
