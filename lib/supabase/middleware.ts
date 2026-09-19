@@ -40,7 +40,6 @@ export async function updateSession(request: NextRequest) {
     '/account',
     '/history',
     '/premium',
-    '/analyze',
     '/checkout',
   ];
   const isProtected = protectedPrefixes.some((p) => pathname.startsWith(p));

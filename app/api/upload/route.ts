@@ -1,22 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pdfParse from 'pdf-parse';
-import { createClient } from '@/lib/supabase/server';
 import { MAX_CONTRACT_CHARS, MAX_PDF_BYTES } from '@/lib/limits';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Sign in required to upload contracts.' },
-        { status: 401 }
-      );
-    }
-
+    // Open to visitors without an account: extracting text is cheap, and the
+    // analysis itself is what gets gated (see /api/analyze).
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 

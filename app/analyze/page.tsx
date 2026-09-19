@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
 import UploadZone from '@/components/UploadZone';
 import ResultsPanel from '@/components/ResultsPanel';
 import PaywallModal from '@/components/PaywallModal';
-import type { AnalysisResult } from '@/lib/analysisTypes';
+import { GuestLockedResult } from '@/components/GuestLockedResult';
+import type { AnalysisResult, GuestAnalysisPreview } from '@/lib/analysisTypes';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Footer } from '@/components/ui/Footer';
 import { Button } from '@/components/ui/Button';
@@ -24,31 +24,74 @@ interface ProfileResponse {
 }
 
 export default function AnalyzePage() {
-  const router = useRouter();
   const [contractText, setContractText] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<AnalysisResult | null>(null);
+  const [guestPreview, setGuestPreview] = useState<GuestAnalysisPreview | null>(
+    null
+  );
   const [showPaywall, setShowPaywall] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [profileInfo, setProfileInfo] = useState<ProfileResponse | null>(null);
   const [error, setError] = useState('');
 
+  const refreshProfile = useCallback(async () => {
+    try {
+      const res = await fetch('/api/profile');
+      if (res.ok) setProfileInfo(await res.json());
+    } catch {
+      // The quota badge is cosmetic; the API enforces limits regardless.
+    }
+  }, []);
+
+  /** Right after sign-up: releases the analysis the visitor ran beforehand. */
+  const claimPendingAnalysis = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/analyze/claim', { method: 'POST' });
+
+      if (res.status === 402) {
+        setShowPaywall(true);
+        return;
+      }
+
+      if (!res.ok) {
+        setError(
+          'We could not find your earlier analysis. Paste your contract again to analyze it.'
+        );
+        return;
+      }
+
+      const data = (await res.json()) as {
+        analysis: AnalysisResult;
+        contractText: string;
+      };
+      setContractText(data.contractText);
+      setResults(data.analysis);
+      setGuestPreview(null);
+      await refreshProfile();
+    } catch {
+      setError('Could not load your analysis. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [refreshProfile]);
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
-        router.replace('/login?redirect=/analyze');
-        return;
-      }
       setAuthChecked(true);
-      fetch('/api/profile')
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data) => {
-          if (data) setProfileInfo(data);
-        })
-        .catch(() => {});
+      if (!user) return;
+
+      refreshProfile();
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('claim') === '1') {
+        window.history.replaceState(null, '', '/analyze');
+        claimPendingAnalysis();
+      }
     });
-  }, [router]);
+  }, [refreshProfile, claimPendingAnalysis]);
 
   const handleAnalyze = async () => {
     if (!contractText.trim()) {
@@ -80,11 +123,6 @@ export default function AnalyzePage() {
 
       const data = await response.json().catch(() => ({}));
 
-      if (response.status === 401) {
-        router.push('/login?redirect=/analyze');
-        return;
-      }
-
       if (response.status === 402) {
         setShowPaywall(true);
         return;
@@ -94,13 +132,16 @@ export default function AnalyzePage() {
         throw new Error(data.error || `API error: ${response.status}`);
       }
 
-      setResults(data as AnalysisResult);
-
-      const profileRes = await fetch('/api/profile');
-      if (profileRes.ok) {
-        const updated = await profileRes.json();
-        setProfileInfo(updated);
+      // Visitor without an account: the result is held back until sign-up.
+      if (data.locked) {
+        setResults(null);
+        setGuestPreview(data as GuestAnalysisPreview);
+        return;
       }
+
+      setGuestPreview(null);
+      setResults(data as AnalysisResult);
+      await refreshProfile();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
@@ -206,7 +247,9 @@ export default function AnalyzePage() {
           </div>
         )}
 
-        {!results && (
+        {!results && guestPreview && <GuestLockedResult preview={guestPreview} />}
+
+        {!results && !guestPreview && (
           <Card muted className="mt-12 text-center py-14 border-dashed">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-surface border border-border">
               <svg className="h-5 w-5 text-ink-faint" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
