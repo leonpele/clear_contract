@@ -1,12 +1,19 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { ensureProfile, getProfileByUserId } from '@/lib/profile/service';
+import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  ensureProfile,
+  getProfileByUserId,
+  syncUsageMonth,
+} from '@/lib/profile/service';
 import { isAdminEmail } from '@/lib/admin';
 import {
   formatPlanLabel,
   formatStatusLabel,
   formatRemainingLabel,
   canAnalyze,
+  effectiveAnalysesUsed,
+  effectiveAnalysesLimit,
 } from '@/lib/entitlements';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Footer } from '@/components/ui/Footer';
@@ -48,8 +55,17 @@ export default async function AccountPage() {
     );
   }
 
+  try {
+    const admin = createAdminClient();
+    profile = await syncUsageMonth(admin, profile);
+  } catch (err) {
+    console.error('account syncUsageMonth:', err);
+  }
+
   const purchaseLabel =
     profile.purchase_type === 'one-time' ? 'One-time' : '—';
+  const used = effectiveAnalysesUsed(profile);
+  const limit = effectiveAnalysesLimit(profile);
 
   return (
     <div className="relative min-h-screen">
@@ -93,7 +109,7 @@ export default async function AccountPage() {
             <div>
               <dt className="label-caps text-ink-muted">Used this period</dt>
               <dd className="mt-1 text-ink tabular-nums">
-                {profile.analyses_used} / {profile.analyses_limit}
+                {used} / {limit}
               </dd>
             </div>
           </dl>

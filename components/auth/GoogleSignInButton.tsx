@@ -8,7 +8,7 @@ interface GoogleSignInButtonProps {
   redirectTo?: string;
 }
 
-export function GoogleSignInButton({ redirectTo = '/account' }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ redirectTo = '/analyze' }: GoogleSignInButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
