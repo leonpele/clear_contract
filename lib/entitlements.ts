@@ -17,20 +17,40 @@ export function isProActive(profile: Profile): boolean {
   return profile.plan === 'pro' && profile.subscription_status === 'active';
 }
 
-/** Effective limit after monthly reset for free users. */
+/**
+ * Used count after calendar-month rollover for pure free users.
+ * One-time credit pools do not virtually reset — paid credits deplete.
+ */
 export function effectiveAnalysesUsed(profile: Profile): number {
   const month = currentUsageMonth();
-  if (profile.plan === 'free' && profile.usage_month !== month) {
+  if (
+    profile.plan === 'free' &&
+    profile.purchase_type !== 'one-time' &&
+    profile.usage_month !== month
+  ) {
     return 0;
   }
   return profile.analyses_used;
+}
+
+/** Limit after month rollover for pure free users (before DB sync). */
+export function effectiveAnalysesLimit(profile: Profile): number {
+  const month = currentUsageMonth();
+  if (
+    profile.plan === 'free' &&
+    profile.purchase_type !== 'one-time' &&
+    profile.usage_month !== month
+  ) {
+    return FREE_ANALYSES_PER_MONTH;
+  }
+  return profile.analyses_limit;
 }
 
 export function canAnalyze(profile: Profile): boolean {
   if (isProActive(profile)) return true;
 
   const used = effectiveAnalysesUsed(profile);
-  return used < profile.analyses_limit;
+  return used < effectiveAnalysesLimit(profile);
 }
 
 export function getRemainingAnalyses(
@@ -39,7 +59,7 @@ export function getRemainingAnalyses(
   if (isProActive(profile)) return 'unlimited';
 
   const used = effectiveAnalysesUsed(profile);
-  return Math.max(0, profile.analyses_limit - used);
+  return Math.max(0, effectiveAnalysesLimit(profile) - used);
 }
 
 export function formatPlanLabel(profile: Profile): string {
@@ -50,6 +70,7 @@ export function formatPlanLabel(profile: Profile): string {
 
 export function formatStatusLabel(profile: Profile): string {
   if (isProActive(profile)) return 'Active';
+  if (profile.subscription_status === 'past_due') return 'Past due';
   if (profile.subscription_status === 'canceled') return 'Canceled';
   if (profile.subscription_status === 'inactive') return 'Inactive';
   if (profile.purchase_type === 'one-time') return 'Credits';

@@ -35,23 +35,29 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/signup') ||
     pathname.startsWith('/auth');
 
-  const protectedPrefixes = ['/dashboard', '/account', '/history', '/premium'];
+  const protectedPrefixes = [
+    '/dashboard',
+    '/account',
+    '/history',
+    '/premium',
+    '/analyze',
+    '/checkout',
+  ];
   const isProtected = protectedPrefixes.some((p) => pathname.startsWith(p));
 
   if (isProtected && !user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
-    loginUrl.searchParams.set('redirect', pathname);
+    const redirectTarget = pathname + request.nextUrl.search;
+    loginUrl.search = '';
+    loginUrl.searchParams.set('redirect', redirectTarget);
     return NextResponse.redirect(loginUrl);
   }
 
   if (user && (pathname === '/login' || pathname === '/signup')) {
-    const redirectTo =
-      request.nextUrl.searchParams.get('redirect') || '/account';
-    const url = request.nextUrl.clone();
-    url.pathname = redirectTo;
-    url.search = '';
-    return NextResponse.redirect(url);
+    const raw = request.nextUrl.searchParams.get('redirect') || '/analyze';
+    const redirectTo = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/analyze';
+    return NextResponse.redirect(new URL(redirectTo, request.url));
   }
 
   return supabaseResponse;

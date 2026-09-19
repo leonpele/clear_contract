@@ -15,6 +15,7 @@ import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 import { PageBackground } from '@/components/ui/PageBackground';
 import { FadeIn } from '@/components/ui/FadeIn';
 import { createClient } from '@/lib/supabase/client';
+import { MAX_CONTRACT_CHARS } from '@/lib/limits';
 
 interface ProfileResponse {
   canAnalyze: boolean;
@@ -55,8 +56,10 @@ export default function AnalyzePage() {
       return;
     }
 
-    if (contractText.length > 50000) {
-      setError('Contract text exceeds 50,000 characters');
+    if (contractText.length > MAX_CONTRACT_CHARS) {
+      setError(
+        `Contract text exceeds ${MAX_CONTRACT_CHARS.toLocaleString('en-US')} characters`
+      );
       return;
     }
 

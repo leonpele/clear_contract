@@ -86,8 +86,12 @@ export async function ensureProfile(
   }
 }
 
-/** Reset free-tier counter when calendar month changes. */
-async function syncUsageMonth(
+/**
+ * Sync free-tier usage when the calendar month changes.
+ * Pure free: reset used + limit to monthly allowance.
+ * One-time credits: preserve used/limit (paid pool must not be wiped).
+ */
+export async function syncUsageMonth(
   admin: SupabaseClient,
   profile: Profile
 ): Promise<Profile> {
@@ -96,13 +100,18 @@ async function syncUsageMonth(
     return profile;
   }
 
+  const update =
+    profile.purchase_type === 'one-time'
+      ? { usage_month: month }
+      : {
+          analyses_used: 0,
+          usage_month: month,
+          analyses_limit: FREE_ANALYSES_PER_MONTH,
+        };
+
   const { data, error } = await admin
     .from('profiles')
-    .update({
-      analyses_used: 0,
-      usage_month: month,
-      analyses_limit: FREE_ANALYSES_PER_MONTH,
-    })
+    .update(update)
     .eq('id', profile.id)
     .select('*')
     .single();

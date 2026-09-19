@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { MAX_PDF_BYTES } from '@/lib/limits';
 
 interface UploadZoneProps {
   onTextExtracted: (text: string) => void;
@@ -22,7 +23,7 @@ export default function UploadZone({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > MAX_PDF_BYTES) {
       setError('File size exceeds 10MB');
       return;
     }
@@ -40,6 +41,10 @@ export default function UploadZone({
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          window.location.href = '/login?redirect=/analyze';
+          return;
+        }
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to upload file');
       }

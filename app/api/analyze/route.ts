@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import type { AnalysisResult } from '@/lib/analysisTypes';
-import { normalizeAnalysisResponse } from '@/lib/normalizeAnalysisResponse';
-import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import {
   canAnalyze,
   effectiveAnalysesUsed,
-  currentUsageMonth,
-  FREE_ANALYSES_PER_MONTH,
 } from '@/lib/entitlements';
+import { MAX_CONTRACT_CHARS } from '@/lib/limits';
 import {
   ensureProfile,
   getProfileByUserId,
   incrementAnalysisUsage,
   saveAnalysisHistory,
+  syncUsageMonth,
 } from '@/lib/profile/service';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+import type { AnalysisResult } from '@/lib/analysisTypes';
+import { normalizeAnalysisResponse } from '@/lib/normalizeAnalysisResponse';
+import { NextRequest, NextResponse } from 'next/server';
+import OpenAI from 'openai';
 
 interface AnalysisRequest {
   text: string;
@@ -91,30 +91,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const month = currentUsageMonth();
-    if (profile.plan === 'free' && profile.usage_month !== month) {
-      const admin = createAdminClient();
-      const { data: refreshed } = await admin
-        .from('profiles')
-        .update({
-          analyses_used: 0,
-          usage_month: month,
-          analyses_limit: FREE_ANALYSES_PER_MONTH,
-        })
-        .eq('id', user.id)
-        .select('*')
-        .single();
-      if (refreshed) profile = refreshed as typeof profile;
-    }
+    const admin = createAdminClient();
+    profile = await syncUsageMonth(admin, profile);
 
-    const activeProfile = profile;
-    if (!activeProfile || !canAnalyze(activeProfile)) {
+    if (!canAnalyze(profile)) {
       return NextResponse.json(
         {
           error: 'Analysis limit reached. Upgrade to continue.',
           code: 'LIMIT_EXCEEDED',
-          used: activeProfile ? effectiveAnalysesUsed(activeProfile) : 0,
-          limit: activeProfile?.analyses_limit ?? 0,
+          used: effectiveAnalysesUsed(profile),
+          limit: profile.analyses_limit,
         },
         { status: 402 }
       );
@@ -142,9 +128,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (text.length > 50000) {
+    if (text.length > MAX_CONTRACT_CHARS) {
       return NextResponse.json(
-        { error: 'Contract text exceeds 50,000 characters' },
+        {
+          error: `Contract text exceeds ${MAX_CONTRACT_CHARS.toLocaleString('en-US')} characters`,
+        },
         { status: 400 }
       );
     }
@@ -174,8 +162,7 @@ export async function POST(request: NextRequest) {
 
     const analysis: AnalysisResult = normalizeAnalysisResponse(parsed);
 
-    const admin = createAdminClient();
-    await incrementAnalysisUsage(admin, activeProfile);
+    await incrementAnalysisUsage(admin, profile);
     await saveAnalysisHistory(admin, user.id, text, analysis);
 
     return NextResponse.json(analysis);

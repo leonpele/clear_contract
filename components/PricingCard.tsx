@@ -27,12 +27,14 @@ export default function PricingCard({
       interactive
       className={
         highlighted
-          ? 'border-primary/30 ring-1 ring-primary/15 shadow-glow'
-          : ''
+          ? 'border-primary/30 ring-1 ring-primary/15 shadow-glow flex flex-col h-full'
+          : 'flex flex-col h-full'
       }
     >
       {highlighted && (
-        <p className="text-xs font-medium text-primary mb-2">Recommended</p>
+        <p className="text-xs font-medium text-primary mb-2 uppercase tracking-wide">
+          Recommended
+        </p>
       )}
       <h3 className="mb-1">{name}</h3>
       <p className="text-3xl font-semibold text-ink mb-1">
@@ -42,10 +44,23 @@ export default function PricingCard({
         )}
       </p>
       <p className="text-sm text-ink-muted mb-6">{description}</p>
-      <ul className="space-y-2 text-sm text-ink-secondary mb-8">
+      <ul className="space-y-3 text-sm text-ink-secondary mb-8 flex-1">
         {features.map((feature) => (
-          <li key={feature} className="flex items-center gap-2">
-            <span className="text-primary">✓</span>
+          <li key={feature} className="flex items-start gap-2.5">
+            <svg
+              className="h-4 w-4 text-primary shrink-0 mt-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4.5 12.75l6 6 9-13.5"
+              />
+            </svg>
             {feature}
           </li>
         ))}

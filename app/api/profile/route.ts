@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { ensureProfile, getProfileByUserId } from '@/lib/profile/service';
+import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  ensureProfile,
+  getProfileByUserId,
+  syncUsageMonth,
+} from '@/lib/profile/service';
 import {
   canAnalyze,
   getRemainingAnalyses,
   formatPlanLabel,
   formatStatusLabel,
   formatRemainingLabel,
+  effectiveAnalysesUsed,
+  effectiveAnalysesLimit,
 } from '@/lib/entitlements';
 
 export async function GET() {
@@ -31,10 +38,21 @@ export async function GET() {
     );
   }
 
+  try {
+    const admin = createAdminClient();
+    profile = await syncUsageMonth(admin, profile);
+  } catch (err) {
+    console.error('profile syncUsageMonth:', err);
+  }
+
   return NextResponse.json({
     profile,
     canAnalyze: canAnalyze(profile),
     remaining: getRemainingAnalyses(profile),
+    usage: {
+      used: effectiveAnalysesUsed(profile),
+      limit: effectiveAnalysesLimit(profile),
+    },
     labels: {
       plan: formatPlanLabel(profile),
       status: formatStatusLabel(profile),
