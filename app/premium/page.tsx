@@ -132,7 +132,16 @@ export default function PremiumPage() {
           </FadeIn>
         </div>
 
-        <LegalDisclaimer className="mt-8" />
+        <p className="mt-6 text-xs text-ink-faint max-w-2xl">
+          En achetant, vous acceptez nos{' '}
+          <a href="/cgu" className="text-primary hover:text-primary-hover">
+            CGU/CGV
+          </a>{' '}
+          et reconnaissez que le service est fourni immédiatement (pas de
+          droit de rétractation, voir les CGV).
+        </p>
+
+        <LegalDisclaimer className="mt-4" />
       </main>
     </div>
   );

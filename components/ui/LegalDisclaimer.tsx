@@ -14,7 +14,14 @@ export function LegalDisclaimer({
       role="note"
     >
       AI-generated analysis. Not legal advice. Review important terms with a
-      qualified professional before signing.
+      qualified professional before signing.{' '}
+      <a
+        href="/cgu#avertissement"
+        className="underline hover:text-ink-muted"
+      >
+        En savoir plus
+      </a>
+      .
     </p>
   );
 }

@@ -30,9 +30,18 @@ export function Footer() {
           </nav>
 
           {/* Legal */}
-          <p className="text-xs text-ink-faint">
-            © {new Date().getFullYear()} ContractClear. Not legal advice.
-          </p>
+          <nav className="flex flex-wrap items-center gap-4 text-xs text-ink-faint">
+            <Link href="/mentions-legales" className="hover:text-ink-muted transition-colors duration-150">
+              Mentions légales
+            </Link>
+            <Link href="/cgu" className="hover:text-ink-muted transition-colors duration-150">
+              CGU/CGV
+            </Link>
+            <Link href="/confidentialite" className="hover:text-ink-muted transition-colors duration-150">
+              Confidentialité
+            </Link>
+            <span>© {new Date().getFullYear()} ContractClear. Not legal advice.</span>
+          </nav>
         </div>
       </div>
     </footer>
