@@ -13,23 +13,20 @@ export function Footer() {
             ContractClear
           </div>
 
-          {/* Links */}
-          <nav className="flex flex-wrap items-center gap-4 text-sm text-ink-muted">
-            <Link href="/analyze" className="hover:text-ink transition-colors duration-150">
-              Analyze
+          {/* Legal */}
+          <nav className="flex flex-wrap items-center gap-4 text-xs text-ink-faint">
+            <Link href="/mentions-legales" className="hover:text-ink-muted transition-colors duration-150">
+              Mentions légales
             </Link>
-            <Link href="/#pricing" className="hover:text-ink transition-colors duration-150">
-              Pricing
+            <Link href="/cgu" className="hover:text-ink-muted transition-colors duration-150">
+              CGU/CGV
             </Link>
-            <Link href="/premium" className="hover:text-ink transition-colors duration-150">
-              Upgrade
-            </Link>
-            <Link href="/account" className="hover:text-ink transition-colors duration-150">
-              Account
+            <Link href="/confidentialite" className="hover:text-ink-muted transition-colors duration-150">
+              Confidentialité
             </Link>
           </nav>
 
-          {/* Legal */}
+          {/* Copyright */}
           <p className="text-xs text-ink-faint">
             © {new Date().getFullYear()} ContractClear. Not legal advice.
           </p>
