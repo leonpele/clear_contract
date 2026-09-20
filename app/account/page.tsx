@@ -14,6 +14,7 @@ import { Card } from '@/components/ui/Card';
 import { LinkButton } from '@/components/ui/LinkButton';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 import { LogoutButton } from '@/components/auth/LogoutButton';
+import { DeleteAccountButton } from '@/components/auth/DeleteAccountButton';
 import { PageBackground } from '@/components/ui/PageBackground';
 import { FadeIn } from '@/components/ui/FadeIn';
 
@@ -120,6 +121,12 @@ export default async function AccountPage() {
             <LogoutButton />
           </div>
         </Card>
+        </FadeIn>
+
+        <FadeIn delay={120}>
+        <div className="mt-6 text-right">
+          <DeleteAccountButton />
+        </div>
         </FadeIn>
 
         <LegalDisclaimer className="mt-8" />
