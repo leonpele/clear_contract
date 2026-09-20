@@ -22,11 +22,21 @@ d'architecture (nouveau sous-traitant, nouvelle donnée collectée, etc.).
 | Stripe | Paiement, gestion des abonnements | UE/États-Unis (infrastructure Stripe) | Email, identifiant client Stripe, statut de paiement — jamais le numéro de carte |
 | Vercel | Hébergement de l'application, mesure d'audience anonyme | Réseau global (edge) | Requêtes HTTP, aucune donnée personnelle identifiable via l'analytics |
 
-⚠️ Supabase étant hébergé hors UE, les transferts de données doivent être
-couverts par les clauses contractuelles types de Supabase (à vérifier dans
-le Data Processing Agreement accepté sur le compte Supabase). Migrer vers
-une région UE nécessiterait de créer un nouveau projet Supabase et de
-migrer les données — non fait à ce jour.
+✅ Supabase étant hébergé hors UE (Singapour), le transfert est couvert par
+les Clauses Contractuelles Types de la Commission européenne (Décision
+2021/914), intégrées de plein droit au DPA Supabase dès l'acceptation des
+conditions générales (clause 12.2 du DPA — pas de signature séparée
+requise). Module applicable : Module 2 (responsable de traitement →
+sous-traitant). Droit et juridiction des clauses : Irlande. Vérifié le
+20/09/2026 en lisant le DPA complet
+(https://supabase.com/legal/customer-resources/data-processing-addendum).
+
+Reste un point d'attention théorique (post-arrêt *Schrems II*) : aucune
+analyse d'impact de transfert (TIA) évaluant les lois de surveillance
+singapouriennes n'a été formalisée. Non bloquant pour un projet de cette
+taille, mais à documenter si le volume d'utilisateurs UE devient
+significatif. Migrer vers une région UE nécessiterait de créer un nouveau
+projet Supabase et de migrer les données — non fait à ce jour.
 
 ---
 

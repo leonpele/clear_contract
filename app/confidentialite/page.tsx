@@ -74,9 +74,13 @@ export default function ConfidentialitePage() {
         <ul className="list-disc pl-5 space-y-1">
           <li>
             <strong>Supabase</strong> (authentification et base de
-            données) — les serveurs de ce projet sont situés en dehors de
-            l&apos;Union européenne ; les transferts sont encadrés par les
-            clauses contractuelles types de Supabase.
+            données) — les serveurs de ce projet sont situés à Singapour,
+            en dehors de l&apos;Union européenne. Ce transfert est encadré
+            par les Clauses Contractuelles Types de la Commission
+            européenne (Décision 2021/914, Module 2 « responsable de
+            traitement vers sous-traitant »), intégrées de plein droit au
+            contrat conclu avec Supabase Pte. Ltd dès l&apos;acceptation de
+            ses conditions générales.
           </li>
           <li>
             <strong>OpenAI</strong> (États-Unis) — reçoit le texte de vos
