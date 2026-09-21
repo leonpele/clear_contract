@@ -63,7 +63,7 @@ export default async function HistoryPage() {
             </LinkButton>
           </Card>
         ) : (
-          <ul className="space-y-3">
+          <ul className="ph-no-capture space-y-3">
             {analyses.map((row) => (
               <li key={row.id}>
                 <Card interactive className="shadow-none">

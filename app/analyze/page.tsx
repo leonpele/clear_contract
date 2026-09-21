@@ -147,7 +147,7 @@ export default function AnalyzePage() {
           subtitle="PDF or pasted text, up to 50,000 characters."
           animate
         >
-          <Card className="space-y-5 shadow-card-hover">
+          <Card className="ph-no-capture space-y-5 shadow-card-hover">
             <UploadZone
               onTextExtracted={setContractText}
               currentText={contractText}
@@ -160,7 +160,7 @@ export default function AnalyzePage() {
                 setError('');
               }}
               placeholder="Paste contract text here…"
-              className={`input-field resize-none leading-relaxed transition-all duration-300 ${
+              className={`ph-no-capture input-field resize-none leading-relaxed transition-all duration-300 ${
                 results ? 'min-h-[140px]' : 'min-h-[220px]'
               }`}
             />
@@ -197,7 +197,7 @@ export default function AnalyzePage() {
         </Section>
 
         {results && (
-          <div className="mt-4 space-y-0 animate-fade-up">
+          <div className="ph-no-capture mt-4 space-y-0 animate-fade-up">
             <SectionDivider />
             <ResultsPanel results={results} contractText={contractText} />
           </div>

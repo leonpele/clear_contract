@@ -96,6 +96,14 @@ export default function ConfidentialitePage() {
             une mesure d&apos;audience anonyme et sans cookies (Vercel Web
             Analytics).
           </li>
+          <li>
+            <strong>PostHog</strong> (hébergement UE) — mesure détaillée de
+            l&apos;usage (pages visitées, clics, replay de session) pour
+            améliorer l&apos;interface. Chargé uniquement après votre
+            consentement via la bannière de cookies ; le texte de vos
+            contrats et les résultats d&apos;analyse sont techniquement
+            exclus de cette mesure.
+          </li>
         </ul>
         <p>Aucune donnée n&apos;est vendue à des tiers.</p>
       </LegalSection>
@@ -149,9 +157,16 @@ export default function ConfidentialitePage() {
       <LegalSection title="8. Cookies">
         <p>
           Le site utilise un cookie de session strictement nécessaire à
-          l&apos;authentification (Supabase Auth). Vercel Web Analytics ne
-          dépose aucun cookie et ne collecte aucune donnée personnelle
-          identifiable.
+          l&apos;authentification (Supabase Auth) ; celui-ci ne nécessite
+          pas de consentement. Vercel Web Analytics ne dépose aucun cookie
+          et ne collecte aucune donnée personnelle identifiable.
+        </p>
+        <p>
+          PostHog (mesure de clics et replay de session) dépose un cookie
+          non essentiel et n&apos;est activé qu&apos;après votre accord via
+          la bannière affichée à votre première visite. Vous pouvez refuser
+          sans que cela affecte l&apos;usage du service, et changer d&apos;avis
+          en effaçant les données de ce site dans votre navigateur.
         </p>
       </LegalSection>
     </LegalPageLayout>

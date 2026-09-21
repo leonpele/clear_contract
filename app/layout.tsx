@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { PostHogProvider } from '@/components/analytics/PostHogProvider';
+import { CookieConsent } from '@/components/analytics/CookieConsent';
 import './globals.css';
 
 const jakarta = Plus_Jakarta_Sans({
@@ -28,6 +30,8 @@ export default function RootLayout({
       <body className={`${jakarta.className} antialiased`}>
         {children}
         <Analytics />
+        <PostHogProvider />
+        <CookieConsent />
       </body>
     </html>
   );
