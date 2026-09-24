@@ -21,6 +21,7 @@ d'architecture (nouveau sous-traitant, nouvelle donnée collectée, etc.).
 | OpenAI | Analyse IA du texte des contrats | États-Unis | Texte intégral des contrats soumis |
 | Stripe | Paiement, gestion des abonnements | UE/États-Unis (infrastructure Stripe) | Email, identifiant client Stripe, statut de paiement — jamais le numéro de carte |
 | Vercel | Hébergement de l'application, mesure d'audience anonyme | Réseau global (edge) | Requêtes HTTP, aucune donnée personnelle identifiable via l'analytics |
+| PostHog | Mesure d'usage détaillée (clics, replay de session, funnels) | UE Cloud (`eu.i.posthog.com`) | Pages visitées, clics, replay de session — chargé uniquement après consentement (bannière cookies) ; le texte des contrats et les résultats d'analyse sont exclus via la classe `ph-no-capture` (textarea, upload, résultats, historique) |
 
 ✅ Supabase étant hébergé hors UE (Singapour), le transfert est couvert par
 les Clauses Contractuelles Types de la Commission européenne (Décision
@@ -80,6 +81,16 @@ projet Supabase et de migrer les données — non fait à ce jour.
 - **Durée de conservation** : durée de vie du compte ; supprimée avec le compte (cascade)
 - **Mesures de sécurité** : aucune policy RLS n'autorise l'accès anonyme/authentifié à cette table ; lecture réservée à `/admin`, restreint par email (`ADMIN_EMAILS`)
 
+## Traitement 5bis — Mesure comportementale (clics, replay de session)
+
+- **Finalité** : repérer où les visiteurs cliquent et à quelle étape ils abandonnent, pour améliorer l'interface
+- **Personnes concernées** : tout visiteur du site ayant accepté la bannière cookies
+- **Données traitées** : pages visitées, clics (position, élément), enregistrement visuel de session (DOM), identifiant anonyme d'appareil — **jamais** le texte des contrats ni les résultats d'analyse (exclusion technique via la classe `ph-no-capture` sur ces zones)
+- **Base légale** : consentement (bannière cookies affichée avant tout chargement de PostHog)
+- **Destinataires** : PostHog (voir tableau des sous-traitants)
+- **Durée de conservation** : selon la politique de rétention du plan PostHog utilisé (à vérifier/ajuster dans les paramètres du projet PostHog)
+- **Mesures de sécurité** : chargement conditionnel au consentement ; champs sensibles masqués (`maskAllInputs`) ; zones à risque bloquées (`blockClass: ph-no-capture`)
+
 ## Traitement 5 — Support et réclamations
 
 - **Finalité** : répondre aux demandes des utilisateurs (support, exercice des droits RGPD, réclamations)
@@ -103,3 +114,4 @@ projet Supabase et de migrer les données — non fait à ce jour.
 ## Historique des mises à jour
 
 - 2026-09-20 : création du registre ; ajout de la suppression de compte en libre-service.
+- 2026-09-21 : vérification du DPA Supabase (SCC confirmées) ; ajout de PostHog (mesure comportementale sous consentement).

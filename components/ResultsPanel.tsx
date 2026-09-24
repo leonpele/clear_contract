@@ -28,7 +28,7 @@ export default function ResultsPanel({ results, contractText }: ResultsPanelProp
   ].slice(0, 5);
 
   return (
-    <div className="space-y-8">
+    <div className="ph-no-capture space-y-8">
       <Section
         title="Risk score"
         subtitle="Overall assessment based on detected terms."
