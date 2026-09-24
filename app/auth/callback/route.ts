@@ -3,10 +3,15 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ensureProfile } from '@/lib/profile/service';
 
+function safeRedirectPath(raw: string | null): string {
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return '/analyze';
+  return raw;
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('redirect') ?? '/account';
+  const next = safeRedirectPath(searchParams.get('redirect'));
 
   if (code) {
     const supabase = await createClient();
@@ -24,8 +29,7 @@ export async function GET(request: Request) {
         }
       }
 
-      const path = next.startsWith('/') ? next : `/${next}`;
-      return NextResponse.redirect(`${origin}${path}`);
+      return NextResponse.redirect(`${origin}${next}`);
     }
     console.error('auth/callback exchangeCodeForSession:', error.message);
   }

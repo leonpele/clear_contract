@@ -1,6 +1,8 @@
 'use client';
 
+import PricingCard from '@/components/PricingCard';
 import { FREE_ANALYSES_PER_MONTH } from '@/lib/entitlements';
+import { PRICING_PLANS } from '@/lib/stripe';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Footer } from '@/components/ui/Footer';
 import { LinkButton } from '@/components/ui/LinkButton';
@@ -24,12 +26,6 @@ const DocumentIcon = () => (
 const KeyIcon = () => (
   <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg className="h-4 w-4 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
   </svg>
 );
 
@@ -63,7 +59,6 @@ export default function Home() {
       />
 
       <main className="flex-1">
-        {/* Hero */}
         <section className="mx-auto max-w-content px-5 py-20 sm:px-8 sm:py-28 text-center">
           <p className="animate-hero mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-surface/80 px-3 py-1 text-xs font-medium text-ink-muted shadow-sm backdrop-blur-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-risk-low animate-pulse-soft" />
@@ -99,7 +94,6 @@ export default function Home() {
           />
         </section>
 
-        {/* Features */}
         <section className="border-t border-border/80 bg-surface/60 backdrop-blur-sm">
           <div className="mx-auto max-w-wide px-5 py-16 sm:px-8 sm:py-20">
             <FadeIn>
@@ -124,7 +118,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Pricing */}
         <section
           className="mx-auto max-w-wide px-5 py-16 sm:px-8 sm:py-20"
           id="pricing"
@@ -138,74 +131,31 @@ export default function Home() {
           </FadeIn>
           <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
             <FadeIn delay={0}>
-              <Card interactive className="flex flex-col h-full">
-                <h3 className="mb-1">One-time</h3>
-                <p className="text-3xl font-semibold text-ink mb-1">€3</p>
-                <p className="text-sm text-ink-muted mb-6">
-                  5 analyses, one payment
-                </p>
-                <ul className="space-y-3 text-sm text-ink-secondary mb-8 flex-1">
-                  <li className="flex items-start gap-2.5">
-                    <CheckIcon /> 5 contract analyses
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <CheckIcon /> Full risk assessment
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <CheckIcon /> PDF and text support
-                  </li>
-                </ul>
-                <LinkButton
-                  href="/checkout?plan=one-time"
-                  variant="secondary"
-                  className="w-full"
-                >
-                  Choose plan
-                </LinkButton>
-              </Card>
+              <PricingCard
+                name={PRICING_PLANS.oneTime.name}
+                price={PRICING_PLANS.oneTime.price}
+                description={`${PRICING_PLANS.oneTime.description}, one payment`}
+                features={PRICING_PLANS.oneTime.features}
+                checkoutHref="/checkout?plan=one-time"
+                ctaLabel="Choose plan"
+              />
             </FadeIn>
 
             <FadeIn delay={100}>
-              <Card
-                interactive
-                className="border-primary/30 ring-1 ring-primary/15 shadow-glow flex flex-col h-full"
-              >
-                <p className="text-xs font-medium text-primary mb-2 uppercase tracking-wide">
-                  Recommended
-                </p>
-                <h3 className="mb-1">Pro</h3>
-                <p className="text-3xl font-semibold text-ink mb-1">
-                  €8
-                  <span className="text-base font-normal text-ink-muted">
-                    /mo
-                  </span>
-                </p>
-                <p className="text-sm text-ink-muted mb-6">
-                  Unlimited analyses
-                </p>
-                <ul className="space-y-3 text-sm text-ink-secondary mb-8 flex-1">
-                  <li className="flex items-start gap-2.5">
-                    <CheckIcon /> Unlimited analyses
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <CheckIcon /> Full risk assessment
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <CheckIcon /> Cancel anytime
-                  </li>
-                </ul>
-                <LinkButton
-                  href="/checkout?plan=subscription"
-                  className="w-full"
-                >
-                  Subscribe
-                </LinkButton>
-              </Card>
+              <PricingCard
+                name={PRICING_PLANS.subscription.name}
+                price={PRICING_PLANS.subscription.price}
+                period="/mo"
+                description={PRICING_PLANS.subscription.description}
+                features={PRICING_PLANS.subscription.features}
+                highlighted
+                checkoutHref="/checkout?plan=subscription"
+                ctaLabel="Subscribe"
+              />
             </FadeIn>
           </div>
         </section>
 
-        {/* CTA */}
         <section className="border-t border-border/80">
           <FadeIn>
             <div className="mx-auto max-w-content px-5 py-16 sm:px-8 text-center">

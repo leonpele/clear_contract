@@ -1,69 +1,110 @@
-import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import type { AnalysisResult } from '@/lib/analysisTypes';
-import { normalizeAnalysisResponse } from '@/lib/normalizeAnalysisResponse';
-import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { track, trackFirstDocumentUploaded } from '@/lib/analytics/track';
 import {
   canAnalyze,
   effectiveAnalysesUsed,
-  currentUsageMonth,
-  FREE_ANALYSES_PER_MONTH,
 } from '@/lib/entitlements';
+import { MAX_CONTRACT_CHARS } from '@/lib/limits';
 import {
   ensureProfile,
   incrementAnalysisUsage,
   saveAnalysisHistory,
+  syncUsageMonth,
 } from '@/lib/profile/service';
+import {
+  AnalysisConfigError,
+  AnalysisParseError,
+  analyzeContract,
+} from '@/lib/analysis/analyzeContract';
+import {
+  GUEST_COOKIE,
+  GUEST_COOKIE_MAX_AGE_S,
+  buildGuestPreview,
+  hashClientIp,
+  isGuestRateLimited,
+  saveGuestAnalysis,
+} from '@/lib/analysis/guest';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+import { track, trackFirstDocumentUploaded } from '@/lib/analytics/track';
+import { NextRequest, NextResponse } from 'next/server';
+import OpenAI from 'openai';
 
 interface AnalysisRequest {
   text: string;
 }
 
-const SYSTEM_PROMPT = `You are a legal document expert. Analyze the contract provided and return a JSON object with this exact structure:
-{
-  "summary": "3-sentence plain language summary of what this contract is about",
-  "risk_score": {
-    "percentage": 0,
-    "level": "low",
-    "explanation": "2-4 sentences: why this score was assigned, referencing concrete themes from the contract"
-  },
-  "risky_clauses": [
-    {
-      "quote": "exact problematic clause from the contract — copy verbatim so it can be found in the text",
-      "explanation": "plain language explanation of why this is risky",
-      "severity": "high"
-    }
-  ],
-  "favorable_clauses": [
-    {
-      "quote": "exact favorable clause from the contract",
-      "explanation": "plain language explanation of why this is good"
-    }
-  ],
-  "key_numbers": [
-    {
-      "label": "what this number represents",
-      "value": "the number, date, or duration"
-    }
-  ]
+/** Validated contract text, or the 400 response to send back. */
+async function readContractText(
+  request: NextRequest
+): Promise<{ text: string } | { error: NextResponse }> {
+  const body = (await request.json()) as AnalysisRequest;
+  const { text } = body;
+
+  if (!text || text.trim().length === 0) {
+    return {
+      error: NextResponse.json(
+        { error: 'Contract text is required' },
+        { status: 400 }
+      ),
+    };
+  }
+
+  if (text.length > MAX_CONTRACT_CHARS) {
+    return {
+      error: NextResponse.json(
+        {
+          error: `Contract text exceeds ${MAX_CONTRACT_CHARS.toLocaleString('en-US')} characters`,
+        },
+        { status: 400 }
+      ),
+    };
+  }
+
+  return { text };
 }
 
-RISK SCORING (risk_score):
-- "percentage" is an integer from 0 (safest) to 100 (highest risk) for the contract as a whole.
-- "level" MUST be exactly one of: "low", "medium", "high", aligned with percentage: low = 0-33, medium = 34-66, high = 67-100.
-- Weight the score especially when you find issues related to: automatic renewal; termination penalties or harsh exit terms; exclusivity or non-compete; broad liability limitations or waivers; unclear or one-sided payment terms; IP ownership transfer or broad IP assignment beyond what is typical.
-- The explanation must briefly cite which of these themes (if any) drove the score, without inventing clauses not in the text.
+/**
+ * Visitor without an account: the contract really is analyzed, but the result
+ * stays server-side. The visitor gets a locked preview and a cookie; signing
+ * up and calling /api/analyze/claim releases the full result.
+ */
+async function handleGuestAnalysis(request: NextRequest) {
+  const admin = createAdminClient();
+  const ipHash = hashClientIp(request.headers);
 
-RISKY CLAUSE SEVERITY:
-- For each risky_clauses item, set "severity" to "high" (serious legal/financial exposure) or "warning" (worth reviewing but less severe).
-- Use "high" for automatic renewal, harsh termination, broad liability waivers, IP assignment, exclusivity.
-- Use "warning" for moderately unfavorable but negotiable terms.
+  if (await isGuestRateLimited(admin, ipHash)) {
+    return NextResponse.json(
+      {
+        error:
+          'Free analysis limit reached for today. Create an account to keep analyzing.',
+        code: 'GUEST_LIMIT',
+      },
+      { status: 429 }
+    );
+  }
 
-QUOTES: Every "quote" must be copied exactly from the contract (same wording) so it can be highlighted in the original text.
+  const input = await readContractText(request);
+  if ('error' in input) return input.error;
 
-Return ONLY the JSON object, no markdown, no preamble.`;
+  const analysis = await analyzeContract(input.text);
+  const guestId = await saveGuestAnalysis(admin, ipHash, input.text, analysis);
+
+  if (!guestId) {
+    return NextResponse.json(
+      { error: 'Could not save your analysis. Please try again.' },
+      { status: 500 }
+    );
+  }
+
+  const response = NextResponse.json(buildGuestPreview(analysis));
+  response.cookies.set(GUEST_COOKIE, guestId, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: GUEST_COOKIE_MAX_AGE_S,
+  });
+  return response;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,10 +114,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Sign in required to analyze contracts.' },
-        { status: 401 }
-      );
+      return await handleGuestAnalysis(request);
     }
 
     let profile = await ensureProfile(supabase, user.id, user.email);
@@ -88,93 +126,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const month = currentUsageMonth();
-    if (profile.plan === 'free' && profile.usage_month !== month) {
-      const admin = createAdminClient();
-      const { data: refreshed } = await admin
-        .from('profiles')
-        .update({
-          analyses_used: 0,
-          usage_month: month,
-          analyses_limit: FREE_ANALYSES_PER_MONTH,
-        })
-        .eq('id', user.id)
-        .select('*')
-        .single();
-      if (refreshed) profile = refreshed as typeof profile;
-    }
+    const admin = createAdminClient();
+    profile = await syncUsageMonth(admin, profile);
 
-    const activeProfile = profile;
-    if (!activeProfile || !canAnalyze(activeProfile)) {
+    if (!canAnalyze(profile)) {
       return NextResponse.json(
         {
           error: 'Analysis limit reached. Upgrade to continue.',
           code: 'LIMIT_EXCEEDED',
-          used: activeProfile ? effectiveAnalysesUsed(activeProfile) : 0,
-          limit: activeProfile?.analyses_limit ?? 0,
+          used: effectiveAnalysesUsed(profile),
+          limit: profile.analyses_limit,
         },
         { status: 402 }
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey?.trim()) {
-      return NextResponse.json(
-        {
-          error:
-            'OPENAI_API_KEY is not configured. Add it to .env.local and restart the dev server.',
-        },
-        { status: 503 }
-      );
-    }
+    const input = await readContractText(request);
+    if ('error' in input) return input.error;
+    const { text } = input;
 
-    const openai = new OpenAI({ apiKey });
-    const body = (await request.json()) as AnalysisRequest;
-    const { text } = body;
-
-    if (!text || text.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Contract text is required' },
-        { status: 400 }
-      );
-    }
-
-    if (text.length > 50000) {
-      return NextResponse.json(
-        { error: 'Contract text exceeds 50,000 characters' },
-        { status: 400 }
-      );
-    }
-
-    const admin = createAdminClient();
     await trackFirstDocumentUploaded(admin, user.id);
 
-    const message = await openai.chat.completions.create({
-      model: 'gpt-4-turbo',
-      max_tokens: 2200,
-      temperature: 0,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: text },
-      ],
-    });
+    const analysis = await analyzeContract(text);
 
-    const responseText = message.choices[0]?.message.content || '';
-
-    let parsed: Record<string, unknown>;
-    try {
-      parsed = JSON.parse(responseText) as Record<string, unknown>;
-    } catch {
-      console.error('Failed to parse OpenAI response:', responseText);
-      return NextResponse.json(
-        { error: 'Failed to parse analysis response' },
-        { status: 500 }
-      );
-    }
-
-    const analysis: AnalysisResult = normalizeAnalysisResponse(parsed);
-
-    await incrementAnalysisUsage(admin, activeProfile);
+    await incrementAnalysisUsage(admin, profile);
     await saveAnalysisHistory(admin, user.id, text, analysis);
     await track(admin, user.id, 'analysis_completed', {
       risk_score: analysis.risk_score.percentage,
@@ -183,6 +158,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(analysis);
   } catch (error) {
     console.error('Error in /api/analyze:', error);
+
+    if (error instanceof AnalysisConfigError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+
+    if (error instanceof AnalysisParseError) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
     if (error instanceof OpenAI.APIError) {
       return NextResponse.json(

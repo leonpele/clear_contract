@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AuthShell } from '@/components/auth/AuthShell';
 import { AuthForm } from '@/components/auth/AuthForm';
+import { FREE_ANALYSES_PER_MONTH } from '@/lib/entitlements';
 
 function SignupContent() {
   const searchParams = useSearchParams();
@@ -12,7 +13,7 @@ function SignupContent() {
   return (
     <AuthShell
       title="Create account"
-      subtitle="Free tier includes 3 contract analyses per month."
+      subtitle={`Free tier includes ${FREE_ANALYSES_PER_MONTH} contract analyses per month.`}
     >
       <AuthForm mode="signup" redirectTo={redirectTo} />
     </AuthShell>

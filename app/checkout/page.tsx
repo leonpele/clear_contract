@@ -47,6 +47,12 @@ function CheckoutRedirectInner() {
         };
 
         if (!res.ok) {
+          if (res.status === 401) {
+            const plan = searchParams.get('plan') || '';
+            const redirect = `/checkout?plan=${encodeURIComponent(plan)}`;
+            window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`;
+            return;
+          }
           setError(
             data.error ||
               `Checkout failed (${res.status}). Check Stripe configuration.`

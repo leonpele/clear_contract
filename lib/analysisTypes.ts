@@ -33,6 +33,13 @@ export interface AnalysisResult {
   risk_score: ContractRiskScore;
 }
 
+/** What a visitor without an account gets back: enough to tempt, not the result. */
+export interface GuestAnalysisPreview {
+  locked: true;
+  risk_level: RiskLevel;
+  risky_clause_count: number;
+}
+
 export type ClauseCategory = 'risk' | 'favorable' | 'key';
 
 export interface ClauseHighlight {
